@@ -58,8 +58,9 @@ typings/
 .env
 
 # Dev env
-/config/
 !/config/login.dfe.osa-api.dev.json
+/config/
+
 
 .idea/workspace.xml
 .idea/watcherTasks.xml
