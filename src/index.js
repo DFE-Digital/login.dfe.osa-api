@@ -29,7 +29,6 @@ app.use(morgan('dev'));
 app.set('view engine', 'ejs');
 app.set('views', path.resolve(__dirname, 'app'));
 app.use(expressLayouts);
-app.set('layout', 'layouts/layout');
 
 if (config.hostingEnvironment.env === 'dev') {
   app.proxy = true;
