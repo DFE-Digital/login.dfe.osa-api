@@ -1,10 +1,10 @@
 {
-  "name": "login.dfe.migration.admin",
+  "name": "login.dfe.osa-api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "settings='./config/PROJECT-NAME.dev.json' node src/index.js",
+    "dev": "settings='./config/login.dfe.osa-api.dev.json' node src/index.js",
     "test": "./node_modules/.bin/jest"
   },
   "engines": {
@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DFE-Digital/login.dfe.node-boilerplate.git"
+    "url": "git+https://github.com/DFE-Digital/login.dfe.osa-api.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/DFE-Digital/login.dfe.node-boilerplate/issues"
+    "url": "https://github.com/DFE-Digital/login.dfe.osa-api/issues"
   },
-  "homepage": "https://github.com/DFE-Digital/login.dfe.node-boilerplate#readme",
+  "homepage": "https://github.com/DFE-Digital/login.dfe.osa-api#readme",
   "dependencies": {
     "body-parser": "^1.18.1",
     "ejs": "^2.5.7",
@@ -27,11 +27,10 @@
     "express-ejs-layouts": "^2.3.1",
     "helmet": "^3.9.0",
     "lodash": "^4.17.4",
-    "login.dfe.audit.winston-sequelize-transport": "git+https://github.com/DFE-Digital/login.dfe.audit.winston-sequelize-transport.git#v1.0",
+    "login.dfe.audit.winston-sequelize-transport": "git+https://github.com/DFE-Digital/login.dfe.audit.winston-sequelize-transport.git#v2.2",
     "login.dfe.sanitization": "git+https://github.com/DFE-Digital/login.dfe.sanitization.git#v1.0",
     "morgan": "^1.9.0",
-    "winston": "^2.4.0",
-    "winston-redis": "^1.0.0"
+    "winston": "^2.4.0"
   },
   "devDependencies": {
     "eslint": "^4.4.1",
