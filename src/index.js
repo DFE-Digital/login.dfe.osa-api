@@ -9,6 +9,8 @@ const path = require('path');
 const config = require('./infrastructure/config');
 const helmet = require('helmet');
 const sanitization = require('login.dfe.sanitization');
+const setupAppRoutes = require('./app/routes');
+const csurf = require('csurf');
 
 const app = express();
 app.use(helmet({
@@ -22,13 +24,22 @@ if (config.hostingEnvironment.env !== 'dev') {
   app.set('trust proxy', 1);
 }
 
+const csrf = csurf({
+  cookie: {
+    secure: true,
+    httpOnly: true,
+  },
+});
+
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(sanitization());
+app.use(bodyParser.json());
 app.use(morgan('combined', { stream: fs.createWriteStream('./access.log', { flags: 'a' }) }));
 app.use(morgan('dev'));
 app.set('view engine', 'ejs');
 app.set('views', path.resolve(__dirname, 'app'));
 app.use(expressLayouts);
+
+setupAppRoutes(app, csrf);
 
 if (config.hostingEnvironment.env === 'dev') {
   app.proxy = true;
