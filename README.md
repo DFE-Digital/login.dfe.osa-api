@@ -1,12 +1,34 @@
-# DfE Express Boilerplate application
+[![Build Status](https://travis-ci.org/DFE-Digital/login.dfe.osa-api.svg?branch=master)](https://travis-ci.org/DFE-Digital/login.dfe.osa-api)
 
-This is a starting point for node applications, it included the basics needed to setup a Web application or API. 
+# DfE OSA API
 
-### Default setting for:
+API use to authenticate user details against OSA db
 
-- ESLint
-- Testing (Jest)
-- Project structure
-- Express Layout
-- Express Middleware
+
+###Endpoints
+
+```
+authenticate
+
+
+POST
+/authenticate
+``` 
+``` 
+body:
+
+{
+    "username": "user1",
+    "password": "my-password"
+}
+``` 
+``` 
+returns
+
+{
+    "firstName":"Test",
+    "lastName":"Tester",
+    "email":"Test"
+}
+``` 
 
