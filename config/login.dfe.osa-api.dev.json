@@ -19,5 +19,12 @@
       "timeout":60000,
       "keepAliveTimeout":30000
     }
+  },
+  "oldSecureAccess": {
+    "type": "static",
+    "params": {
+      "legacyConnectionString": "postgres://nowhere",
+      "decryptionKey": "na"
+    }
   }
 }
