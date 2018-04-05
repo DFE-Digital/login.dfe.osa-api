@@ -4,7 +4,7 @@ jest.mock('./../../../src/infrastructure/config', () => ({
   },
 }));
 
-jest.mock('./../../../src/infrastructure/oldsecureAccess', () => {
+jest.mock('./../../../src/infrastructure/oldSecureAccess', () => {
   return {
     getUserByUsername: jest.fn(),
   };
