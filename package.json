@@ -22,14 +22,20 @@
   "homepage": "https://github.com/DFE-Digital/login.dfe.osa-api#readme",
   "dependencies": {
     "body-parser": "^1.18.1",
+    "csurf": "^1.9.0",
     "ejs": "^2.5.7",
     "express": "^4.15.4",
     "express-ejs-layouts": "^2.3.1",
     "helmet": "^3.9.0",
     "lodash": "^4.17.4",
+    "login.dfe.api.auth": "github:DFE-Digital/login.dfe.api.auth",
     "login.dfe.audit.winston-sequelize-transport": "git+https://github.com/DFE-Digital/login.dfe.audit.winston-sequelize-transport.git#v2.2",
+    "login.dfe.express-error-handling": "github:DFE-Digital/login.dfe.express-error-handling",
+    "login.dfe.healthcheck": "github:DFE-Digital/login.dfe.healthcheck",
     "login.dfe.sanitization": "git+https://github.com/DFE-Digital/login.dfe.sanitization.git#v1.0",
     "morgan": "^1.9.0",
+    "openpgp": "^2.6.2",
+    "sequelize": "^4.37.5",
     "winston": "^2.4.0"
   },
   "devDependencies": {
