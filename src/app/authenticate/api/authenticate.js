@@ -1,4 +1,5 @@
 const { validateOsaCredentials } = require('./../utils/validateCredentials');
+const { safeUser } = require('./../../utils/safeUser');
 
 const authenticate = async (req, res) => {
   if (!req.body.username || !req.body.password) {
@@ -14,7 +15,7 @@ const authenticate = async (req, res) => {
     });
   }
 
-  return res.send(authResult);
+  return res.send(safeUser(authResult));
 };
 
 module.exports = authenticate;
