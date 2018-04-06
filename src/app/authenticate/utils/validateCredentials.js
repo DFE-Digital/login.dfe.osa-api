@@ -21,11 +21,7 @@ const validateOsaCredentials = async (username, password) => {
     return null;
   }
 
-  return {
-    firstName: user.firstName,
-    lastName: user.lastName,
-    email: user.email,
-  };
+  return user;
 };
 
 module.exports = { validateOsaCredentials };

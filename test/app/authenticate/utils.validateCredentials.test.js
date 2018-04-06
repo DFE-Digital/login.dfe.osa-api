@@ -57,5 +57,6 @@ describe('When validating the user', () => {
 
     expect(actual).not.toBeNull();
     expect(actual.email).toBe('test@username.local');
+    expect(actual.password).toBe('e8603172175d138e1724d75c91f788738fcbcc74fc98ee68837075bbb0aaf0f6db567cca1b61ec57ad646d79e39b3b2ed452b8a048f22b265fb74b8a244a828c');
   });
 });
