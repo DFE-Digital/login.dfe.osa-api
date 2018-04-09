@@ -117,6 +117,9 @@ const organisations = db.define('organisation', {
   uid: {
     type: Sequelize.BIGINT,
   },
+  ukprn: {
+    type: Sequelize.BIGINT,
+  },
 }, {
   tableName: 'organisation',
   timestamps: false,
