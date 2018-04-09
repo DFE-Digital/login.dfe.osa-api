@@ -1,5 +1,5 @@
 const config = require('./../../config');
-const Sequelize = require('sequelize');
+const Sequelize = require('sequelize').default;
 const assert = require('assert');
 const Op = Sequelize.Op;
 
@@ -104,6 +104,18 @@ const organisations = db.define('organisation', {
   },
   name: {
     type: Sequelize.STRING,
+  },
+  urn: {
+    type: Sequelize.INTEGER,
+  },
+  local_authority: {
+    type: Sequelize.STRING,
+  },
+  type: {
+    type: Sequelize.STRING,
+  },
+  uid: {
+    type: Sequelize.BIGINT,
   },
 }, {
   tableName: 'organisation',

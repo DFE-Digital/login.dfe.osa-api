@@ -69,4 +69,19 @@ describe('When authenticating a request', () => {
     expect(res._getData().lastName).toBe('Tester');
     expect(res._getData().email).toBe('test@tester.local');
   });
+  it('then the password and salt are not returned to the user', async () => {
+    validateOsaCredentials.mockReturnValue({
+      firstName: 'Test',
+      lastName: 'Tester',
+      email: 'test@tester.local',
+      password: 'password',
+      salt: 'salty',
+    });
+
+    await post(req, res);
+
+    expect(res.statusCode).toBe(200);
+    expect(res._getData().password).toBe(undefined)
+    expect(res._getData().salt).toBe(undefined)
+  });
 });
