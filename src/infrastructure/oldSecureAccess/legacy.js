@@ -142,6 +142,11 @@ const getUserByUsername = async (username) => {
       },
       include: ['org', 'groups'],
     });
+
+    if (!userEntity) {
+      return null;
+    }
+
     return await mapUserEntity(userEntity);
   } catch (e) {
     throw e;
