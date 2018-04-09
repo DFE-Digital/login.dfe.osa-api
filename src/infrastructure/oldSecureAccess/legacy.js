@@ -92,6 +92,10 @@ const mapUserEntity = async (user) => {
     organisation: {
       id: '72711ff9-2da1-4135-8a20-3de1fea31073',
       name: user.org.dataValues.name,
+      urn: user.org.dataValues.urn,
+      localAuthority: user.org.dataValues.local_authority,
+      type: user.org.dataValues.type,
+      uid: user.org.dataValues.uid,
     },
     services,
   };
