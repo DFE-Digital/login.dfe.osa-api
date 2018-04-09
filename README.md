@@ -5,7 +5,7 @@
 API use to authenticate user details against OSA db
 
 
-###Endpoints
+### Endpoints
 
 ```
 authenticate
