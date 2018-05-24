@@ -5,6 +5,7 @@ const { resolve: resolvePath, join: joinPathes } = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
 const { promisify } = require('util');
+const { copyFileToBlob } = require('./azureBlobStorage');
 
 const writeFileAsync = promisify(fs.writeFile);
 const mkdirAsync = promisify(fs.mkdir);
@@ -83,8 +84,8 @@ const restoreBackup = async (backupLocation) => {
   const pgrestoreDir = joinPathes(postgresDir, platformDir);
 
 
-  const stdoutLog = fs.createWriteStream(backupLocation.substr(0, backupLocation.length - 6) + '.stdout.log');
-  const stderrLog = fs.createWriteStream(backupLocation.substr(0, backupLocation.length - 6) + '.stderr.log');
+  const stdoutLog = fs.createWriteStream(`${backupLocation.substr(0, backupLocation.length - 6)}.stdout.log`);
+  const stderrLog = fs.createWriteStream(`${backupLocation.substr(0, backupLocation.length - 6)}.stderr.log`);
   try {
     await new Promise((resolve, reject) => {
       try {
@@ -124,12 +125,26 @@ const restoreBackup = async (backupLocation) => {
     stderrLog.end();
   }
 };
+const storeFiles = async (backupLocation) => {
+  const backupStdoutLocation = `${backupLocation.substr(0, backupLocation.length - 6)}.stdout.log`;
+  const backupStderrLocation = `${backupLocation.substr(0, backupLocation.length - 6)}.stderr.log`;
+
+  logger.info(`Copying ${backupLocation} to archive`);
+  await copyFileToBlob(backupLocation);
+
+  logger.info(`Copying ${backupStdoutLocation} to archive`);
+  await copyFileToBlob(backupStdoutLocation);
+
+  logger.info(`Copying ${backupStderrLocation} to archive`);
+  await copyFileToBlob(backupStderrLocation);
+};
 
 const downloadAndRestoreOsaBackup = async () => {
   try {
     const data = await downloadBackup();
     const backupPath = await saveBackup(data);
     await restoreBackup(backupPath);
+    await storeFiles(backupPath);
   } catch (e) {
     logger.error(e.message);
   }
