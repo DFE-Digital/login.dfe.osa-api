@@ -1,7 +1,12 @@
 const schedule = require('node-schedule');
+const logger = require('./infrastructure/logger');
+const config = require('./infrastructure/config');
 
-schedule.scheduleJob('*/1 * * * *', () => {
-  console.log('Tick');
+const downloadAndRestoreOsaBackup = require('./app/osaRestore');
+
+const osaRestoreSchedule = schedule.scheduleJob(config.schedules.osaRestore, async () => {
+  await downloadAndRestoreOsaBackup();
+  logger.info(`next invocation of OSA restore schedule will be ${osaRestoreSchedule.nextInvocation()}`);
 });
+logger.info(`first invocation of OSA restore schedule will be ${osaRestoreSchedule.nextInvocation()}`);
 
-console.log('Started');
