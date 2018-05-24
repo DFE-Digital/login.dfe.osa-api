@@ -23,13 +23,14 @@
   "oldSecureAccess": {
     "type": "static",
     "params": {
-      "legacyConnectionString": "postgres://nowhere",
       "decryptionKey": "na",
       "host": "",
       "port": 5432,
       "database": "postgres",
       "username": "",
-      "password": ""
+      "password": "",
+      "dialect": "postgres",
+      "ssl": true
     }
   }
 }
