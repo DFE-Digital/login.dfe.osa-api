@@ -76,10 +76,11 @@ const saveBackup = async (data) => {
   return path;
 };
 const restoreBackup = async (backupLocation) => {
-  const postgresDir = resolvePath('./external_modules/postgres');
+  let postgresDir = resolvePath('./external_modules/postgres');
   let platformDir = 'MacOS';
   if (process.platform.match(/^win/i)) {
     platformDir = 'Windows-x86';
+    postgresDir = resolvePath('../external_modules/postgres');
   }
   const pgrestoreDir = joinPathes(postgresDir, platformDir);
 
