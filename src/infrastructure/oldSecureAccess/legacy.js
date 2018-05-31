@@ -36,9 +36,9 @@ const decrypt = async (cipheredArray) => {
 const mapUserEntity = async (user) => {
   const userApplications = uniqBy(user.groups.map(group => ({
     id: group.application,
-  })), item => item.id).filter(application => application.id !== 1);
+  })), item => item.id).filter(application => application.id !== '1');
 
-  const userRoles = user.groups.filter(group => group.application === 1)
+  const userRoles = user.groups.filter(group => group.application === '1')
     .map(group => roleMapping.find(mapping => mapping.osa === group.code)).sort((x, y) => {
       if (x === null) {
         return 1;
@@ -60,14 +60,13 @@ const mapUserEntity = async (user) => {
         },
       },
     });
-    const newAppMap = serviceMapping.find(x => x.code === applicationEntity.code);
+    const newAppMap = serviceMapping.find(x => x.code.toLowerCase() === applicationEntity.code.toLowerCase());
     if (!newAppMap) {
       return null;
     }
     return {
       id: newAppMap.id,
       name: applicationEntity.dataValues.name,
-      role: userRoles.length > 0 ? userRoles[0].nsa : null,
     };
   }))).filter(x => x !== null && x.role !== null).sort((x, y) => {
     if (x.name < y.name) {
@@ -90,13 +89,13 @@ const mapUserEntity = async (user) => {
     password: user.dataValues.password,
     salt: user.dataValues.salt,
     organisation: {
-      id: '72711ff9-2da1-4135-8a20-3de1fea31073',
       name: user.org.dataValues.name,
       urn: user.org.dataValues.urn,
       localAuthority: user.org.dataValues.local_authority,
       type: user.org.dataValues.type,
       uid: user.org.dataValues.uid,
     },
+    role: userRoles.length > 0 ? userRoles[0].nsa : null,
     services,
   };
 };

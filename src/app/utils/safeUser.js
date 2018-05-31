@@ -2,7 +2,7 @@
 
 const { pick } = require('lodash');
 
-const safeUser = user => pick(user, ['username', 'firstName', 'lastName', 'email', 'organisation', 'services']);
+const safeUser = user => pick(user, ['username', 'firstName', 'lastName', 'email', 'organisation', 'role', 'services']);
 
 
 module.exports = { safeUser };
