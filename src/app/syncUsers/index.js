@@ -16,14 +16,14 @@ const startMonitoring = () => {
 
   logger.info('Monitoring for osarestorecomplete events');
   queue.process('osarestorecomplete', (job, done) => {
-    handleRestoreComplete(queue)
+    handleRestoreComplete(job.id, queue)
       .then(() => done())
       .catch(e => done(e));
   });
 
   logger.info('Monitoring for syncosauser events');
   queue.process('syncosauser', (job, done) => {
-    handleSyncOsaUser(job.id, job.data.osaUsername)
+    handleSyncOsaUser(job.id, job.data.osaUsername, job.data.userId)
       .then(() => done())
       .catch(e => done(e));
   });
