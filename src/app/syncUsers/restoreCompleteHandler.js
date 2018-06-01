@@ -37,7 +37,7 @@ const handleRestoreComplete = async (id, queue) => {
       const user = migratedUsers[i];
       const syncUserJobId = await queueUserForSync(user.osaUsername, user.userId, queue);
 
-      logger.info(`Send syncosauser for ${user.osaUsername} / ${user.userId}, job id ${syncUserJobId}`);
+      logger.info(`Sent syncosauser for ${user.osaUsername} / ${user.userId}, job id ${syncUserJobId}`);
     }
 
     pageNumber += 1;
