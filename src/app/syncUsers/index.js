@@ -1,4 +1,5 @@
 const kue = require('kue');
+const config = require('./../../infrastructure/config');
 const logger = require('./../../infrastructure/logger');
 const handleRestoreComplete = require('./restoreCompleteHandler');
 const handleSyncOsaUser = require('./syncOsaUserHandler');
@@ -6,9 +7,8 @@ const handleSyncOsaUser = require('./syncOsaUserHandler');
 let queue;
 
 const startMonitoring = () => {
-  const connectionString = 'redis://127.0.0.1:6379?db=11'; // TODO: Get from config
   queue = kue.createQueue({
-    redis: connectionString,
+    redis: config.syncJobs.connectionString,
   });
   queue.on('error', (e) => {
     logger.warn(`An error occured in the monitor queue - ${e.message}`, e);
