@@ -8,7 +8,7 @@ let queue;
 
 const startMonitoring = () => {
   queue = kue.createQueue({
-    redis: config.syncJobs.connectionString,
+    redis: config.sync.connectionString,
   });
   queue.on('error', (e) => {
     logger.warn(`An error occured in the monitor queue - ${e.message}`, e);

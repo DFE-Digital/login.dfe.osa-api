@@ -141,9 +141,8 @@ const storeFiles = async (backupLocation) => {
   await copyFileToBlob(backupStderrLocation);
 };
 const notifyRestoreComplete = async () => {
-  const connectionString = config.syncJobs.connectionString
   const queue = kue.createQueue({
-    redis: connectionString,
+    redis: config.sync.connectionString,
   });
   return new Promise((resolve, reject) => {
     const queuedJob = queue.create('osarestorecomplete');
