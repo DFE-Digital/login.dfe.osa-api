@@ -6,7 +6,9 @@ const { Op } = require('sequelize');
 const { users, applications, organisations } = require('./schemas/legacySecureAccess.schema');
 const config = require('./../config');
 
-const roleMapping = [
+const SAFE_APPLICATION_ID = '1';
+
+const safeRoleMapping = [
   { osa: 'end_user', nsa: { id: 0, name: 'End user' } },
   { osa: 'approver', nsa: { id: 10000, name: 'Approver' } },
   { osa: 'super_admin', nsa: { id: 10000, name: 'Approver' } },
@@ -17,6 +19,19 @@ const serviceMapping = [
   { code: 'COLLECT', id: 'fb27f118-c7cc-4ce4-a2aa-6255cfd34cf0' },
   { code: 'S2S', id: '8c3b6436-8249-4c73-8a35-fceb18cf7bf1' },
   { code: 'Edubase', id: 'da634158-f6ae-4b6a-903c-805be7fd5390' },
+  { code: 'EvolveEmpAccessSchoolProd', id: '48135506-6315-4edc-8a69-87f4f0b4f815' },
+  { code: 'EvolveEmpAccessAgentProd', id: '0e674aa5-6b70-4677-bb83-039cacb66ec4' },
+  { code: 'EvolveAppropriateBodyProd', id: '45c989a6-8dde-4ba4-a99b-0ad639415488' },
+  { code: 'EvolveTSS', id: 'e6c15ca4-b29a-41c3-9c36-274d6bca3cb2' },
+  { code: 'CustomerExchange', id: '88b086dd-325e-4f90-8952-d515608c1d79' },
+  { code: 'CustomerExchangeTest', id: '2ba0c7d4-3818-4619-abdf-e99c75f68768' },
+  { code: 'EvolveTrainingProvider', id: '0d15c5bd-ca2f-4211-b789-853bb34ce884' },
+  { code: 'EvolveEmpAccessSchool', id: 'aa4bd63e-61b8-421f-90df-8ef2cd15aa38' },
+  { code: 'EvolveEmpAccessAgent', id: 'ddfa2fa3-9824-4678-a2e0-f34d6d71948e' },
+  { code: 'EvolveAppropriateBody', id: '8fba5fde-832b-499b-957e-8bcd97d11b2d' },
+  { code: 'Post16CoursePortal', id: '88257043-c89c-4772-ab51-49f4d73f3339' },
+  { code: 'EduBase', id: '2f706180-071a-43bb-a21c-b73f6a8cdab8' },
+  { code: 'RAISEonline', id: 'df2ae7f3-917a-4489-8a62-8b9b536a71cc' },
 ];
 
 const decrypt = async (cipheredArray) => {
@@ -36,10 +51,10 @@ const decrypt = async (cipheredArray) => {
 const mapUserEntity = async (user) => {
   const userApplications = uniqBy(user.groups.map(group => ({
     id: group.application,
-  })), item => item.id).filter(application => application.id !== 1);
-
-  const userRoles = user.groups.filter(group => group.application === 1)
-    .map(group => roleMapping.find(mapping => mapping.osa === group.code)).sort((x, y) => {
+  })), item => item.id).filter(application => application.id.toString() !== SAFE_APPLICATION_ID);
+  const userServiceRoles = user.groups.filter(group => group.application.toString() !== SAFE_APPLICATION_ID);
+  const userSafeRoles = user.groups.filter(group => group.application.toString() === SAFE_APPLICATION_ID)
+    .map(group => safeRoleMapping.find(mapping => mapping.osa === group.code)).sort((x, y) => {
       if (x === null) {
         return 1;
       }
@@ -67,7 +82,7 @@ const mapUserEntity = async (user) => {
     return {
       id: newAppMap.id,
       name: applicationEntity.dataValues.name,
-      role: userRoles.length > 0 ? userRoles[0].nsa : null,
+      roles: userServiceRoles.filter(x => x.dataValues.application.toString() === applicationEntity.dataValues.id.toString()).map(x => x.code),
     };
   }))).filter(x => x !== null && x.role !== null).sort((x, y) => {
     if (x.name < y.name) {
@@ -89,13 +104,16 @@ const mapUserEntity = async (user) => {
     username: user.dataValues.username,
     password: user.dataValues.password,
     salt: user.dataValues.salt,
+    osaId: user.dataValues.id,
     organisation: {
-      id: '72711ff9-2da1-4135-8a20-3de1fea31073',
+      /* id: '72711ff9-2da1-4135-8a20-3de1fea31073', */
+      osaId: user.org.dataValues.id,
       name: user.org.dataValues.name,
       urn: user.org.dataValues.urn,
       localAuthority: user.org.dataValues.local_authority,
       type: user.org.dataValues.type,
       uid: user.org.dataValues.uid,
+      role: userSafeRoles.length > 0 ? userSafeRoles[0].nsa : null,
     },
     services,
   };
