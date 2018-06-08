@@ -11,11 +11,6 @@ const getIntValueOrDefault = (value, defaultValue = 0) => {
   return isNaN(int) ? defaultValue : int;
 };
 
-
-if (!config.oldSecureAccess.params || !config.oldSecureAccess.params.legacyConnectionString) {
-  assert(config.oldSecureAccess.params,'Must provide config oldSecureAccess.params.legacyConnectionString');
-}
-
 const databaseName = config.oldSecureAccess.params.name || 'postgres';
 const encryptDb = config.oldSecureAccess.params.encrypt || false;
 
@@ -50,6 +45,7 @@ if (config.oldSecureAccess.params.connectionString) {
     operatorsAliases: Op,
     dialectOptions: {
       encrypt: encryptDb,
+      ssl: config.oldSecureAccess.params.ssl || false,
     },
   };
   if (config.oldSecureAccess.params.pool) {
