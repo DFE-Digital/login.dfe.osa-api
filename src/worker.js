@@ -9,4 +9,3 @@ const osaRestoreSchedule = schedule.scheduleJob(config.schedules.osaRestore, asy
   logger.info(`next invocation of OSA restore schedule will be ${osaRestoreSchedule.nextInvocation()}`);
 });
 logger.info(`first invocation of OSA restore schedule will be ${osaRestoreSchedule.nextInvocation()}`);
-
