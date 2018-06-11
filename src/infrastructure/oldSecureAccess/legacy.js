@@ -169,35 +169,9 @@ const getUserByUsername = async (username) => {
 };
 
 const dropTablesAndViews = async () => {
-  const listTablesQuery = 'SELECT table_schema AS schema, table_name AS name, table_type AS type FROM INFORMATION_SCHEMA.TABLES WHERE table_schema IN (\'public\', \'aud_event\', \'aud_saml\') ORDER BY table_type DESC, table_name';
-
-  let iterationErrors;
-  let tables = await db.query(listTablesQuery, { type: QueryTypes.SELECT });
-  let iteration = 0;
-  while (tables.length > 0 && iteration < 3) {
-    iterationErrors = [];
-    for (let i = 0; i < tables.length; i++) {
-      const table = tables[i];
-      try {
-        if (table.type === 'VIEW') {
-          await db.query(`DROP VIEW IF EXISTS ${table.schema}.${table.name} CASCADE`);
-        } else {
-          await db.query(`DROP TABLE IF EXISTS ${table.schema}.${table.name} CASCADE`);
-        }
-      } catch (e) {
-        iterationErrors.push(`Error dropping ${table.schema}.${table.name} (${table.type}) - ${e.message}`);
-      }
-    }
-
-    tables = await db.query(listTablesQuery, { type: QueryTypes.SELECT });
-    iteration += 1;
-  }
-
-  if (iterationErrors && iterationErrors.length > 0) {
-    iterationErrors.forEach((e) => {
-      console.error(e);
-    });
-  }
+  await db.query('DROP SCHEMA IF EXISTS public CASCADE');
+  await db.query('DROP SCHEMA IF EXISTS aud_saml CASCADE');
+  await db.query('DROP SCHEMA IF EXISTS aud_event CASCADE');
 };
 
 module.exports = {
