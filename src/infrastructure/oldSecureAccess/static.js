@@ -32,7 +32,12 @@ const searchForUsers = async criteria => users.filter(user => user.email.toLower
 
 const getUserByUsername = async username => users.find(user => user.username.toLowerCase() === username.toLowerCase());
 
+const dropTablesAndViews = async () => {
+  return Promise.resolve();
+};
+
 module.exports = {
   searchForUsers,
   getUserByUsername,
+  dropTablesAndViews,
 };
