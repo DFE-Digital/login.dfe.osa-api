@@ -18,8 +18,8 @@ let db;
 if (config.oldSecureAccess.params.connectionString) {
   db = new Sequelize(config.oldSecureAccess.params.connectionString);
 } else {
-  assert(config.oldSecureAccess.params.username, 'Database property username must be supplied');
-  assert(config.oldSecureAccess.params.password, 'Database property password must be supplied');
+  // assert(config.oldSecureAccess.params.username, 'Database property username must be supplied');
+  // assert(config.oldSecureAccess.params.password, 'Database property password must be supplied');
   assert(config.oldSecureAccess.params.host, 'Database property host must be supplied');
   assert(config.oldSecureAccess.params.dialect, 'Database property dialect must be supplied, this must be postgres or mssql');
 
@@ -167,6 +167,7 @@ users.belongsTo(organisations, { as: 'org', foreignKey: 'organisation' });
 users.belongsToMany(groups, { as: 'groups', through: 'safe_user_to_user_group', foreignKey: 'safe_user', otherKey: 'user_group' });
 
 module.exports = {
+  db,
   users,
   organisations,
   userToGroupMapping,

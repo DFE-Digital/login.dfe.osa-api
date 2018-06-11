@@ -3,9 +3,11 @@ const logger = require('./../../infrastructure/logger');
 const aws = require('aws-sdk');
 const { resolve: resolvePath, join: joinPathes } = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const { spawn } = require('child_process');
 const { promisify } = require('util');
 const { copyFileToBlob } = require('./azureBlobStorage');
+const { dropTablesAndViews } = require('./../../infrastructure/oldSecureAccess');
 const kue = require('kue');
 
 const writeFileAsync = promisify(fs.writeFile);
@@ -24,12 +26,17 @@ const leftPad = (string, length, padChar = '0') => {
   return temp.substr(temp.length - length);
 };
 const getObjectKey = (nameFormat) => {
-  const now = new Date(2017, 9, 12);
+  const now = new Date();
   const yyyy = now.getFullYear().toString();
   const mm = leftPad(now.getMonth() + 1, 2).toString();
   const dd = leftPad(now.getDate(), 2).toString();
   return nameFormat.replace('{yyyy}', yyyy)
     .replace('{mm}', mm).replace('{dd}', dd);
+};
+const md5 = (data) => {
+  const hash = crypto.createHash('md5');
+  hash.update(data);
+  return new Buffer(hash.digest('hex'), 'hex');
 };
 
 const downloadBackup = async () => {
@@ -54,6 +61,45 @@ const downloadBackup = async () => {
       });
     } catch (e) {
       reject(new Error(`Error downloading OSA backup - ${e.message}`));
+    }
+  });
+};
+const decryptData = async (encryptedData) => {
+  return new Promise((resolve, reject) => {
+    try {
+      logger.info('Decrypting OSA backup');
+      const salt = encryptedData.slice(8, 16);
+      const body = encryptedData.slice(16);
+      const password = Buffer.from(config.oldSecureAccess.backup.decryptionKey, 'utf8');
+
+      const hash0 = new Buffer('');
+      const hash1 = md5(Buffer.concat([hash0, password, salt]));
+      const hash2 = md5(Buffer.concat([hash1, password, salt]));
+      const hash3 = md5(Buffer.concat([hash2, password, salt]));
+      const key = Buffer.concat([hash1, hash2]);
+      const iv = hash3;
+
+      const decoder = crypto.createDecipheriv('aes-256-cbc', key, iv);
+
+      const chunks = [];
+      let index = 0;
+      while (index < body.length) {
+        let length = body.length - index;
+        if (length > 1024) {
+          length = 1024;
+        }
+        const buffer = Buffer.alloc(length);
+
+        body.copy(buffer, 0, index, index + length);
+        chunks.push(decoder.update(buffer));
+        index += length;
+      }
+      chunks.push(decoder.final());
+
+      logger.info('Successfully decrypted OSA backup');
+      resolve(Buffer.concat(chunks));
+    } catch (e) {
+      reject(new Error(`Error decrypting OSA backup - ${e.message}`));
     }
   });
 };
@@ -98,12 +144,17 @@ const restoreBackup = async (backupLocation) => {
         const args = [
           `--host=${config.oldSecureAccess.params.host}`,
           `--port=${config.oldSecureAccess.params.port}`,
-          `--username=${config.oldSecureAccess.params.username}`,
-          `--dbname=${config.oldSecureAccess.params.database}`,
-          backupLocation,
+          `--dbname=${config.oldSecureAccess.params.name}`,
+          '--clean',
+          '--if-exists',
         ];
+        if (config.oldSecureAccess.params.username) {
+          args.push(`--username=${config.oldSecureAccess.params.username}`);
+        }
+        args.push(backupLocation);
+
         logger.info(`spawning pg_restore in ${opts.cwd} to restore ${backupLocation}`);
-        const proc = spawn('pg_restore', args, opts);
+        const proc = spawn(`${pgrestoreDir}/pg_restore`, args, opts);
         proc.stdout.on('data', (data) => {
           stdoutLog.write(data);
         });
@@ -159,8 +210,10 @@ const notifyRestoreComplete = async () => {
 
 const downloadAndRestoreOsaBackup = async () => {
   try {
-    const data = await downloadBackup();
+    const encryptedData = await downloadBackup();
+    const data = await decryptData(encryptedData);
     const backupPath = await saveBackup(data);
+    await dropTablesAndViews();
     await restoreBackup(backupPath);
     await storeFiles(backupPath);
 
