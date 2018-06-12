@@ -23,8 +23,21 @@
   "oldSecureAccess": {
     "type": "static",
     "params": {
-      "legacyConnectionString": "postgres://nowhere",
-      "decryptionKey": "na"
+      "decryptionKey": "na",
+      "host": "",
+      "port": 5432,
+      "database": "postgres",
+      "username": "",
+      "password": "",
+      "dialect": "postgres",
+      "ssl": true
+    },
+    "backup": {
+      "bucketName": "",
+      "accessKey": "",
+      "accessSecret": "",
+      "objectNameFormat": "",
+      "archiveUri": ""
     }
   }
 }

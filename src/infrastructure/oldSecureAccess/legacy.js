@@ -2,8 +2,8 @@
 
 const openpgp = require('openpgp');
 const { uniqBy } = require('lodash');
-const { Op } = require('sequelize');
-const { users, applications, organisations } = require('./schemas/legacySecureAccess.schema');
+const { Op, QueryTypes } = require('sequelize');
+const { db, users, applications, organisations } = require('./schemas/legacySecureAccess.schema');
 const config = require('./../config');
 
 const SAFE_APPLICATION_ID = '1';
@@ -168,7 +168,14 @@ const getUserByUsername = async (username) => {
   }
 };
 
+const dropTablesAndViews = async () => {
+  await db.query('DROP SCHEMA IF EXISTS public CASCADE');
+  await db.query('DROP SCHEMA IF EXISTS aud_saml CASCADE');
+  await db.query('DROP SCHEMA IF EXISTS aud_event CASCADE');
+};
+
 module.exports = {
   searchForUsers,
   getUserByUsername,
+  dropTablesAndViews,
 };
