@@ -56,7 +56,7 @@ const decrypt = async (cipheredArray) => {
 const getEstablishmentDataForOrgId = async (orgId) => {
   const response = {};
 
-  const dfeNumberResult = await db.query(`select a.code, case when val.discriminator = 'rexf.unicodetext.4000' then val.text_value when val.discriminator = 'rexf.integer' then val.integer_value::text end as value from organisation o join rexf_attribute_value v on o.extension = v.entity join rexf_attribute a on v.attribute = a.id join rexf_atomic_value val on v.id = val.attribute_value where o.id = ${orgId};`);
+  const dfeNumberResult = await db.query(`select x  a.code, case when val.discriminator = 'rexf.unicodetext.4000' then val.text_value when val.discriminator = 'rexf.integer' then val.integer_value::text end as value from organisation o join rexf_attribute_value v on o.extension = v.entity join rexf_attribute a on v.attribute = a.id join rexf_atomic_value val on v.id = val.attribute_value where o.id = ${orgId};`);
   if (dfeNumberResult[0] && dfeNumberResult[0].length > 0) {
     dfeNumberResult[0].forEach((e) => {
       response[e.code] = e.value;
