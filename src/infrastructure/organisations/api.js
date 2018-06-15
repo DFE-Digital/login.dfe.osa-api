@@ -16,7 +16,7 @@ const callApi = async (method, resource, body, correlationId) => {
   try {
     const opts = {
       method,
-      uri: `${config.directories.service.url}/${resource}`,
+      uri: `${config.organisations.service.url}/${resource}`,
       headers: {
         authorization: `bearer ${token}`,
         'x-correlation-id': correlationId,
@@ -32,7 +32,18 @@ const callApi = async (method, resource, body, correlationId) => {
   } catch (e) {
     throw e;
   }
-}
+};
+
+const getOrganisationByExternalId = async (type, externalId, correlationId) => {
+  try {
+    return await callApi('GET', `/organisations/by-external-id/${type}/${externalId}`, undefined, correlationId);
+  } catch (e) {
+    if (e.statusCode === 404) {
+      return null;
+    }
+    throw e;
+  }
+};
 
 const setUserRoleAtOrganisation = async (userId, organisationId, roleId, correlationId) => {
   await callApi('PUT', `/organisations/${organisationId}/users/${userId}`, { roleId }, correlationId);
@@ -47,6 +58,7 @@ const removeUserAccessToService = async (userId, organisationId, serviceId, corr
 };
 
 module.exports = {
+  getOrganisationByExternalId,
   setUserRoleAtOrganisation,
   setUserAccessToService,
   removeUserAccessToService,

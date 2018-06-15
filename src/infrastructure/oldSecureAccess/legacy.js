@@ -16,18 +16,18 @@ const safeRoleMapping = [
 ];
 const serviceMapping = [
   { code: 'KTS', id: '3bfde961-f061-4786-b618-618deaf96e44' },
-  { code: 'COLLECT', id: 'fb27f118-c7cc-4ce4-a2aa-6255cfd34cf0' },
-  { code: 'S2S', id: '8c3b6436-8249-4c73-8a35-fceb18cf7bf1' },
-  { code: 'Edubase', id: 'da634158-f6ae-4b6a-903c-805be7fd5390' },
+  // { code: 'COLLECT', id: 'fb27f118-c7cc-4ce4-a2aa-6255cfd34cf0' },
+  // { code: 'S2S', id: '8c3b6436-8249-4c73-8a35-fceb18cf7bf1' },
+  // { code: 'Edubase', id: 'da634158-f6ae-4b6a-903c-805be7fd5390' },
   { code: 'EvolveTSS', id: 'e6c15ca4-b29a-41c3-9c36-274d6bca3cb2' },
-  { code: 'CustomerExchange', id: '88b086dd-325e-4f90-8952-d515608c1d79' },
-  { code: 'CustomerExchangeTest', id: '2ba0c7d4-3818-4619-abdf-e99c75f68768' },
+  // { code: 'CustomerExchange', id: '88b086dd-325e-4f90-8952-d515608c1d79' },
+  // { code: 'CustomerExchangeTest', id: '2ba0c7d4-3818-4619-abdf-e99c75f68768' },
   { code: 'EvolveTrainingProvider', id: '0d15c5bd-ca2f-4211-b789-853bb34ce884' },
   { code: 'EvolveEmpAccessSchool', id: 'aa4bd63e-61b8-421f-90df-8ef2cd15aa38' },
   { code: 'EvolveEmpAccessAgent', id: 'ddfa2fa3-9824-4678-a2e0-f34d6d71948e' },
   { code: 'EvolveAppropriateBody', id: '8fba5fde-832b-499b-957e-8bcd97d11b2d' },
-  { code: 'Post16CoursePortal', id: '88257043-c89c-4772-ab51-49f4d73f3339' },
-  { code: 'EduBase', id: '2f706180-071a-43bb-a21c-b73f6a8cdab8' },
+  // { code: 'Post16CoursePortal', id: '88257043-c89c-4772-ab51-49f4d73f3339' },
+  // { code: 'EduBase', id: '2f706180-071a-43bb-a21c-b73f6a8cdab8' },
   { code: 'RAISEonline', id: 'df2ae7f3-917a-4489-8a62-8b9b536a71cc' },
 ];
 
@@ -51,7 +51,9 @@ const mapUserEntity = async (user) => {
   })), item => item.id).filter(application => application.id.toString() !== SAFE_APPLICATION_ID);
   const userServiceRoles = user.groups.filter(group => group.application.toString() !== SAFE_APPLICATION_ID);
   const userSafeRoles = user.groups.filter(group => group.application.toString() === SAFE_APPLICATION_ID)
-    .map(group => safeRoleMapping.find(mapping => mapping.osa === group.code)).sort((x, y) => {
+    .map(group => safeRoleMapping.find(mapping => mapping.osa === group.code))
+    .filter(role => role !== null)
+    .sort((x, y) => {
       if (x === null) {
         return 1;
       }
@@ -62,7 +64,7 @@ const mapUserEntity = async (user) => {
         return 1;
       }
       return 0;
-    }).filter(role => role !== null);
+    });
 
   const services = (await Promise.all(userApplications.map(async (application) => {
     const applicationEntity = await applications.find({
@@ -112,7 +114,7 @@ const mapUserEntity = async (user) => {
       uid: user.org.dataValues.uid,
       role: userSafeRoles.length > 0 ? userSafeRoles[0].nsa : null,
     },
-    role: userRoles.length > 0 ? userRoles[0].nsa : null,
+    // role: userSafeRoles.length > 0 ? userSafeRoles[0].nsa : null,
     services,
   };
 };

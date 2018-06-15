@@ -1,16 +1,30 @@
 const logger = require('./../../infrastructure/logger');
 const { getUserByUsername: getOsaUser } = require('./../../infrastructure/oldSecureAccess');
 const { getPreviousDetailsForUser, setPreviousDetailsForUser } = require('./cache');
-const { setUserRoleAtOrganisation, setUserAccessToService, removeUserAccessToService } = require('./../../infrastructure/organisations');
+const { setUserRoleAtOrganisation, setUserAccessToService, removeUserAccessToService, getOrganisationByExternalId } = require('./../../infrastructure/organisations');
 
+const getOrganisationId = async (osaOrganisation) => {
+  let externalId = osaOrganisation.urn;
+  if (osaOrganisation.type === '010' || osaOrganisation.type === '013') {
+    externalId = osaOrganisation.uid;
+  } else if (osaOrganisation.type === '002') {
+    externalId = osaOrganisation.localAuthority;
+  }
+
+  const organisation = await getOrganisationByExternalId(osaOrganisation.type, externalId);
+  if (!organisation) {
+    throw new Error(`Cannot find organisation in DfE Sign-in (type:${osaOrganisation.type}, id:${externalId})`);
+  }
+  return organisation.id;
+};
 const updateRole = async (osaUser, previous, userId, correlationId) => {
-  if (previous && previous.role.id === osaUser.role.id) {
+  if (previous && previous.organisation.role.id === osaUser.organisation.role.id) {
     return; // No update
   }
 
-  await setUserRoleAtOrganisation(userId, osaUser.organisation.id, osaUser.role.id, correlationId);
+  await setUserRoleAtOrganisation(userId, osaUser.organisation.id, osaUser.organisation.role.id, correlationId);
 
-  logger.info(`updated role of ${osaUser.username} / ${userId} to ${osaUser.role.name} (${osaUser.role.id})`);
+  logger.info(`updated role of ${osaUser.username} / ${userId} to ${osaUser.organisation.role.name} (${osaUser.organisation.role.id})`);
 };
 const addNewServices = async (osaUser, previous, userId, correlationId) => {
   let newServices = osaUser.services;
@@ -48,8 +62,7 @@ const handleSyncOsaUser = async (id, osaUsername, userId) => {
     const previous = await getPreviousDetailsForUser(osaUsername);
     const correlationId = `syncosauser-${id}`;
 
-    // TODO: Embelish mapped org id
-    osaUser.organisation.id = 'coming soon';
+    osaUser.organisation.id = await getOrganisationId(osaUser.organisation);
 
     await updateRole(osaUser, previous, userId, correlationId);
     await addNewServices(osaUser, previous, userId, correlationId);
