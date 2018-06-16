@@ -207,9 +207,6 @@ const storeFiles = async (backupLocation) => {
 const downloadAndRestoreOsaBackup = async () => {
   try {
     const backupPath = await downloadAndDecryptBackupToDisk();
-    // const encryptedData = await downloadBackup();
-    // const data = await decryptData(encryptedData);
-    // const backupPath = await saveBackup(data);
     await dropTablesAndViews();
     await restoreBackup(backupPath);
     await storeFiles(backupPath);
