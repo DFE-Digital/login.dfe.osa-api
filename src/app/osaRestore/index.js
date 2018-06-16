@@ -24,7 +24,7 @@ const leftPad = (string, length, padChar = '0') => {
   return temp.substr(temp.length - length);
 };
 const getObjectKey = (nameFormat) => {
-  const now = new Date(2018, 5, 11);
+  const now = new Date();
   const yyyy = now.getFullYear().toString();
   const mm = leftPad(now.getMonth() + 1, 2).toString();
   const dd = leftPad(now.getDate(), 2).toString();
