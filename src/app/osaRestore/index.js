@@ -9,7 +9,6 @@ const { promisify } = require('util');
 const { copyFileToBlob } = require('./azureBlobStorage');
 const { dropTablesAndViews } = require('./../../infrastructure/oldSecureAccess');
 
-const writeFileAsync = promisify(fs.writeFile);
 const mkdirAsync = promisify(fs.mkdir);
 
 const s3Config = config.oldSecureAccess.backup;
@@ -38,71 +37,7 @@ const md5 = (data) => {
   return new Buffer(hash.digest('hex'), 'hex');
 };
 
-const downloadBackup = async () => {
-  return new Promise((resolve, reject) => {
-    try {
-      logger.info('Starting download of OSA backup');
-
-      const object = {
-        Bucket: s3Config.bucketName,
-        Key: getObjectKey(s3Config.objectNameFormat),
-      };
-      logger.info(`Getting ${JSON.stringify(object)}`);
-      const s3 = new aws.S3();
-      s3.getObject(object, (err, data) => {
-        if (err) {
-          reject(new Error(`Error downloading OSA backup - ${err.message}`));
-          return;
-        }
-
-        logger.info('Finished downloading OSA backup');
-        resolve(data.Body);
-      });
-    } catch (e) {
-      reject(new Error(`Error downloading OSA backup - ${e.message}`));
-    }
-  });
-};
-const decryptData = async (encryptedData) => {
-  return new Promise((resolve, reject) => {
-    try {
-      logger.info('Decrypting OSA backup');
-      const salt = encryptedData.slice(8, 16);
-      const body = encryptedData.slice(16);
-      const password = Buffer.from(config.oldSecureAccess.backup.decryptionKey, 'utf8');
-
-      const hash0 = new Buffer('');
-      const hash1 = md5(Buffer.concat([hash0, password, salt]));
-      const hash2 = md5(Buffer.concat([hash1, password, salt]));
-      const hash3 = md5(Buffer.concat([hash2, password, salt]));
-      const key = Buffer.concat([hash1, hash2]);
-      const iv = hash3;
-
-      const decoder = crypto.createDecipheriv('aes-256-cbc', key, iv);
-
-      const chunks = [];
-      let index = 0;
-      while (index < body.length) {
-        let length = body.length - index;
-        if (length > 1024) {
-          length = 1024;
-        }
-        const buffer = Buffer.alloc(length);
-
-        body.copy(buffer, 0, index, index + length);
-        chunks.push(decoder.update(buffer));
-        index += length;
-      }
-      chunks.push(decoder.final());
-
-      logger.info('Successfully decrypted OSA backup');
-      resolve(Buffer.concat(chunks));
-    } catch (e) {
-      reject(new Error(`Error decrypting OSA backup - ${e.message}`));
-    }
-  });
-};
-const saveBackup = async (data) => {
+const getSavePath = async () => {
   const dir = resolvePath('./download');
   const fileName = `${Date.now()}.pgsql`;
   const path = joinPathes(dir, fileName);
@@ -116,10 +51,88 @@ const saveBackup = async (data) => {
     }
   }
 
-  logger.info(`Writing file to ${path}`);
-  await writeFileAsync(path, data);
-
   return path;
+};
+const getObjectPart = async (s3, key, offset, length) => {
+  const start = offset;
+  const end = start + length;
+  const object = {
+    Bucket: s3Config.bucketName,
+    Key: key,
+    Range: `bytes=${start}-${end}`,
+  };
+  return new Promise((resolve, reject) => {
+    s3.getObject(object, (err, data) => {
+      if (err) {
+        return reject(new Error(`Error downloading block ${start}-${end} of ${key} from S3 - ${err.message}`));
+      }
+
+      const contentRange = data.ContentRange.match(/^bytes\s([0-9]{1,})\-([0-9]{1,})\/([0-9]{1,})$/);
+      const totalLength = parseInt(contentRange[3]);
+
+      return resolve({
+        start,
+        end,
+        totalLength,
+        data: data.Body,
+      });
+    });
+  });
+};
+const getDecoder = (firstDataPath) => {
+  const salt = firstDataPath.slice(8, 16);
+  const password = Buffer.from(config.oldSecureAccess.backup.decryptionKey, 'utf8');
+
+  const hash0 = new Buffer('');
+  const hash1 = md5(Buffer.concat([hash0, password, salt]));
+  const hash2 = md5(Buffer.concat([hash1, password, salt]));
+  const hash3 = md5(Buffer.concat([hash2, password, salt]));
+  const key = Buffer.concat([hash1, hash2]);
+  const iv = hash3;
+
+  return crypto.createDecipheriv('aes-256-cbc', key, iv);
+};
+const downloadAndDecryptBackupToDisk = async () => {
+  try {
+    logger.info('Starting download of OSA backup');
+
+    const s3 = new aws.S3();
+    const objectKey = getObjectKey(s3Config.objectNameFormat);
+    const path = await getSavePath();
+    const saveStream = fs.createWriteStream(path);
+
+    let offset = 0;
+    let decoder;
+    let totalLength = -1;
+    while (totalLength === -1 || offset < totalLength) {
+      let downloadLength = totalLength === -1 ? 1048576 : totalLength - offset;
+      if (downloadLength > 1048576) {
+        downloadLength = 1048576;
+      }
+      logger.debug(`Downloading ${downloadLength} bytes, starting at ${offset} for ${objectKey} (total length: ${totalLength === -1 ? 'unknown' : totalLength})`);
+
+      const block = await getObjectPart(s3, objectKey, offset, downloadLength);
+
+      if (!decoder) {
+        decoder = getDecoder(block.data);
+        block.data = block.data.slice(16);
+      }
+
+      const decodedBlock = decoder.update(block.data);
+      saveStream.write(decodedBlock);
+
+      totalLength = block.totalLength;
+      offset = block.end + 1;
+    }
+
+    const decodedFinal = decoder.final();
+    saveStream.end(decodedFinal);
+
+    logger.info(`Finshed download of OSA backup. Saved to ${path}`);
+    return path;
+  } catch (e) {
+    throw new Error(`Error downloading OSA backup - ${e.message}`);
+  }
 };
 const restoreBackup = async (backupLocation) => {
   let postgresDir = resolvePath('./external_modules/postgres');
@@ -193,9 +206,7 @@ const storeFiles = async (backupLocation) => {
 
 const downloadAndRestoreOsaBackup = async () => {
   try {
-    const encryptedData = await downloadBackup();
-    const data = await decryptData(encryptedData);
-    const backupPath = await saveBackup(data);
+    const backupPath = await downloadAndDecryptBackupToDisk();
     await dropTablesAndViews();
     await restoreBackup(backupPath);
     await storeFiles(backupPath);
