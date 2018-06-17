@@ -8,20 +8,18 @@ const users = [
       id: 'org1',
       name: 'Some School',
     },
+    role: {
+      id: 10000,
+      name: 'Approver',
+    },
     services: [
       {
         id: 'svc1',
         name: 'Service One',
-        role: {
-          name: 'Approver',
-        },
       },
       {
         id: 'svc2',
         name: 'Service Two',
-        role: {
-          name: 'End User',
-        },
       },
     ],
   },

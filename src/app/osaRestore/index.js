@@ -8,6 +8,7 @@ const { spawn } = require('child_process');
 const { promisify } = require('util');
 const { copyFileToBlob } = require('./azureBlobStorage');
 const { dropTablesAndViews } = require('./../../infrastructure/oldSecureAccess');
+const kue = require('kue');
 
 const mkdirAsync = promisify(fs.mkdir);
 
@@ -203,6 +204,22 @@ const storeFiles = async (backupLocation) => {
   logger.info(`Copying ${backupStderrLocation} to archive`);
   await copyFileToBlob(backupStderrLocation);
 };
+const notifyRestoreComplete = async () => {
+  const queue = kue.createQueue({
+    redis: config.sync.connectionString,
+  });
+  return new Promise((resolve, reject) => {
+    const queuedJob = queue.create('osarestorecomplete');
+    queuedJob.save((err) => {
+      if (err) {
+        reject(err);
+      } else {
+        console.info(`Sent osarestorecomplete, job id ${queuedJob.id}`);
+        resolve();
+      }
+    });
+  });
+}
 
 const downloadAndRestoreOsaBackup = async () => {
   try {
@@ -210,6 +227,8 @@ const downloadAndRestoreOsaBackup = async () => {
     await dropTablesAndViews();
     await restoreBackup(backupPath);
     await storeFiles(backupPath);
+
+    await notifyRestoreComplete();
   } catch (e) {
     logger.error(e.message);
   }
