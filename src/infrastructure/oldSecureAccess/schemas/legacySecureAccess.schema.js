@@ -110,6 +110,9 @@ const organisations = db.define('organisation', {
   type: {
     type: Sequelize.STRING,
   },
+  status: {
+    type: Sequelize.STRING,
+  },
   uid: {
     type: Sequelize.BIGINT,
   },

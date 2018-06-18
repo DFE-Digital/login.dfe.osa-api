@@ -31,6 +31,14 @@ const serviceMapping = [
   { code: 'RAISEonline', id: 'df2ae7f3-917a-4489-8a62-8b9b536a71cc' },
 ];
 
+const orgStatusMapping = [
+  { code: 1, name: 'Open' },
+  { code: 2, name: 'Closed' },
+  { code: 3, name: 'Closed, but active' },
+  { code: 4, name: 'Proposed to open' },
+];
+
+
 const decrypt = async (cipheredArray) => {
   if (!cipheredArray) {
     return '';
@@ -43,6 +51,19 @@ const decrypt = async (cipheredArray) => {
 
   const decrypted = await openpgp.decrypt(options);
   return decrypted.data;
+};
+
+const getEstablishmentDataForOrgId = async (orgId) => {
+  const response = {};
+
+  const dfeNumberResult = await db.query(`select x  a.code, case when val.discriminator = 'rexf.unicodetext.4000' then val.text_value when val.discriminator = 'rexf.integer' then val.integer_value::text end as value from organisation o join rexf_attribute_value v on o.extension = v.entity join rexf_attribute a on v.attribute = a.id join rexf_atomic_value val on v.id = val.attribute_value where o.id = ${orgId};`);
+  if (dfeNumberResult[0] && dfeNumberResult[0].length > 0) {
+    dfeNumberResult[0].forEach((e) => {
+      response[e.code] = e.value;
+    });
+  }
+
+  return response;
 };
 
 const mapUserEntity = async (user) => {
@@ -95,6 +116,11 @@ const mapUserEntity = async (user) => {
 
   const firstName = await decrypt(user.dataValues.first_name);
   const lastName = await decrypt(user.dataValues.last_name);
+  let statusName = '';
+  if (user.org && user.org.status) {
+    statusName = orgStatusMapping.find(s => s.code.toString().toLowerCase() === user.org.status.toString().toLowerCase()).name;
+  }
+  const establishmentData = await getEstablishmentDataForOrgId(user.org.id);
 
   return {
     firstName,
@@ -113,11 +139,15 @@ const mapUserEntity = async (user) => {
       type: user.org.dataValues.type,
       uid: user.org.dataValues.uid,
       role: userSafeRoles.length > 0 ? userSafeRoles[0].nsa : null,
+      statusCode: user.org.status,
+      statusName,
+      establishmentData,
     },
     // role: userSafeRoles.length > 0 ? userSafeRoles[0].nsa : null,
     services,
   };
 };
+
 
 const searchForUsers = async (criteria) => {
   try {
@@ -181,4 +211,5 @@ module.exports = {
   searchForUsers,
   getUserByUsername,
   dropTablesAndViews,
+
 };
