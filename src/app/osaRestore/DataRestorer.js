@@ -94,19 +94,25 @@ class DataRestorer {
     const tempClient = new DatabaseClient(host, port, tempDbName, username, password, useSSL);
     await primaryClient.connect();
     try {
+      logger.info(`Create temp database ${tempDbName}`);
       await primaryClient.createDatabase(tempDbName);
       await tempClient.connect();
 
+      logger.info('Prepare temp database')
       await tempClient.prepareDatabase();
 
       await restoreBackup(this.backupPath, host, port, tempDbName, username, password);
 
+      logger.info('Rename current database');
       await primaryClient.renameDatabase(backupDbName);
       dropBackupDb = true;
+
+      logger.info('Rename temp database');
       await tempClient.renameDatabase(primaryDbName);
     } finally {
       if (dropBackupDb) {
         try {
+          logger.info('Drop backup database');
           await primaryClient.dropDatabase();
         } catch (e) {
           logger.warn(e.message);
