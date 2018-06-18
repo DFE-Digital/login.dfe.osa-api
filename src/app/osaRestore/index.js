@@ -215,7 +215,7 @@ const notifyRestoreComplete = async () => {
       if (err) {
         reject(err);
       } else {
-        console.info(`Sent osarestorecomplete, job id ${queuedJob.id}`);
+        logger.info(`Sent osarestorecomplete, job id ${queuedJob.id}`);
         resolve();
       }
     });

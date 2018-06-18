@@ -51,11 +51,37 @@ class DatabaseClient {
     }
   }
 
-  async dropDatabase(databaseName) {
+  async dropDatabase() {
+    const renameClient = new Client({
+      user: this.details.username,
+      host: this.details.host,
+      database: 'postgres',
+      password: this.details.password,
+      port: this.details.port,
+      ssl: this.details.ssl || false,
+    });
+
     try {
-      await this.client.query(`DROP DATABASE ${databaseName}`);
+      await renameClient.connect();
     } catch (e) {
-      throw new Error(`Error dropping database ${databaseName} - ${e.message}`);
+      throw new Error(`Error connecting to postgres to drop database from ${this.details.dbName} - ${e.message}`);
+    }
+
+    try {
+      await this.client.query('SELECT pg_terminate_backend(pg_stat_activity.pid) ' +
+        'FROM pg_stat_activity ' +
+        `WHERE pg_stat_activity.datname = '${this.details.dbName}' ` +
+        'AND pid <> pg_backend_pid();');
+
+      await this.disconnect();
+    } catch (e) {
+      throw new Error(`Error disconnection clients from ${this.details.dbName} - ${e.message}`);
+    }
+
+    try {
+      await renameClient.query(`DROP DATABASE ${this.details.dbName}`);
+    } catch (e) {
+      throw new Error(`Error dropping database ${this.details.dbName} - ${e.message}`);
     }
   }
 

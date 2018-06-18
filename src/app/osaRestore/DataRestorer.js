@@ -89,6 +89,7 @@ class DataRestorer {
     const tempDbName = getGetTempDbName();
     const backupDbName = tempDbName.replace('restore', 'backup');
 
+    let dropBackupDb = false;
     const primaryClient = new DatabaseClient(host, port, primaryDbName, username, password, useSSL);
     const tempClient = new DatabaseClient(host, port, tempDbName, username, password, useSSL);
     await primaryClient.connect();
@@ -101,11 +102,15 @@ class DataRestorer {
       await restoreBackup(this.backupPath, host, port, tempDbName, username, password);
 
       await primaryClient.renameDatabase(backupDbName);
+      dropBackupDb = true;
       await tempClient.renameDatabase(primaryDbName);
     } finally {
-      try {
-        await primaryClient.dropDatabase(backupDbName);
-      } catch (e) {
+      if (dropBackupDb) {
+        try {
+          await primaryClient.dropDatabase();
+        } catch (e) {
+          logger.warn(e.message);
+        }
       }
 
       await primaryClient.disconnect();
