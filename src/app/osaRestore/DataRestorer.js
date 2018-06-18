@@ -5,8 +5,6 @@ const { resolve: resolvePath, join: joinPathes } = require('path');
 const { spawn } = require('child_process');
 const DatabaseClient = require('./DatabaseClient');
 
-const tablesToCopy = ['safe_user'];
-
 const leftPad = (string, length, padChar = '0') => {
   const temp = new Array(length).join(padChar) + string;
   return temp.substr(temp.length - length);
@@ -41,6 +39,7 @@ const restoreBackup = async (backupLocation, host, port, dbname, username, passw
           `--host=${host}`,
           `--port=${port}`,
           `--dbname=${dbname}`,
+          '--schema=public',
           '--clean',
           '--if-exists',
         ];
