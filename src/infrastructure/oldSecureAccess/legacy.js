@@ -31,6 +31,8 @@ const serviceMapping = [
   { code: 'RAISEonline', id: 'df2ae7f3-917a-4489-8a62-8b9b536a71cc' },
 ];
 
+openpgp.config.ignore_mdc_error = true;
+
 const decrypt = async (cipheredArray) => {
   if (!cipheredArray) {
     return '';

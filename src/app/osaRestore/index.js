@@ -8,6 +8,7 @@ const { spawn } = require('child_process');
 const { promisify } = require('util');
 const { copyFileToBlob } = require('./azureBlobStorage');
 const { dropTablesAndViews } = require('./../../infrastructure/oldSecureAccess');
+const DataRestorer = require('./DataRestorer');
 const kue = require('kue');
 
 const mkdirAsync = promisify(fs.mkdir);
@@ -219,16 +220,18 @@ const notifyRestoreComplete = async () => {
       }
     });
   });
-}
+};
 
 const downloadAndRestoreOsaBackup = async () => {
   try {
     const backupPath = await downloadAndDecryptBackupToDisk();
-    await dropTablesAndViews();
-    await restoreBackup(backupPath);
-    await storeFiles(backupPath);
+
+    const restorer = new DataRestorer(backupPath);
+    await restorer.restore();
 
     await notifyRestoreComplete();
+
+    await storeFiles(backupPath);
   } catch (e) {
     logger.error(e.message);
   }
