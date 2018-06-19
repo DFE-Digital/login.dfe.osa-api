@@ -6,7 +6,7 @@ const setUserRoleAtOrganisation = async (userId, organisationId, roleId, correla
   return Promise.resolve();
 };
 
-const setUserAccessToService = async (userId, organisationId, serviceId, correlationId) => {
+const setUserAccessToService = async (userId, organisationId, serviceId, externalIdentifiers, correlationId) => {
   return Promise.resolve();
 };
 
