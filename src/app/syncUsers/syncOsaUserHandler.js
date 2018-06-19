@@ -34,8 +34,14 @@ const addNewServices = async (osaUser, previous, userId, correlationId) => {
 
   for (let i = 0; i < newServices.length; i += 1) {
     const service = newServices[i];
+    const externalIdentifiers = [
+      { key: 'organisationId', value: osaUser.organisation.osaId },
+      { key: 'groups', value: (service.roles || []).join(',') },
+      { key: 'saUserId', value: osaUser.osaId },
+      { key: 'saUserName', value: osaUser.username },
+    ];
 
-    await setUserAccessToService(userId, osaUser.organisation.id, service.id, correlationId);
+    await setUserAccessToService(userId, osaUser.organisation.id, service.id, externalIdentifiers, correlationId);
 
     logger.info(`added service ${service.name} (${service.id}) to ${osaUser.username} / ${userId}`);
   }
