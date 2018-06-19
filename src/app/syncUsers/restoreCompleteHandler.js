@@ -55,7 +55,7 @@ const queueOrgTypeForSync = async (orgType, queue) => {
 };
 const queueOrgTypesForSync = async (correlationId, queue) => {
   const orgTypesToSync = ['001', '004', '008', '009', '010', '011', '012', '013'];
-  for (let i = 0; orgTypesToSync.length; i++) {
+  for (let i = 0; i < orgTypesToSync.length; i += 1) {
     const jobId = await queueOrgTypeForSync(orgTypesToSync[i], queue);
     logger.info(`Sent syncosaorgtype for ${orgTypesToSync[i]}, job id ${jobId}`);
   }

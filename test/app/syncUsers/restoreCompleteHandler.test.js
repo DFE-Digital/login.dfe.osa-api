@@ -100,7 +100,13 @@ describe('when a restore of osa has completed', () => {
   it('then it should ignore users that do not have legacy usernames', async () => {
     await handleRestoreComplete(id, queue);
 
-    expect(queue.create.mock.calls).toHaveLength(3);
+    expect(queue.create).not.toHaveBeenCalledWith('syncosauser', { userId: 'user1' });
+    expect(queue.create).not.toHaveBeenCalledWith('syncosauser', { userId: 'user2' });
+    expect(queue.create).not.toHaveBeenCalledWith('syncosauser', { userId: 'user3' });
+    expect(queue.create).not.toHaveBeenCalledWith('syncosauser', { userId: 'user4' });
+    expect(queue.create).not.toHaveBeenCalledWith('syncosauser', { userId: 'user6' });
+    expect(queue.create).not.toHaveBeenCalledWith('syncosauser', { userId: 'user7' });
+    expect(queue.create).not.toHaveBeenCalledWith('syncosauser', { userId: 'user9' });
   });
 
   it('then it should read all pages of users from directories', async () => {
