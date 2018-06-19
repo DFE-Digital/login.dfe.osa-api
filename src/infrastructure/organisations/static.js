@@ -12,11 +12,16 @@ const setUserAccessToService = async (userId, organisationId, serviceId, externa
 
 const removeUserAccessToService = async (userId, organisationId, serviceId, correlationId) => {
   return Promise.resolve();
-}
+};
+
+const upsertOrganisation = async (organisation, correlationId) => {
+  return Promise.resolve();
+};
 
 module.exports = {
   getOrganisationByExternalId,
   setUserRoleAtOrganisation,
   setUserAccessToService,
   removeUserAccessToService,
+  upsertOrganisation,
 };
