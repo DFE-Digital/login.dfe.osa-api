@@ -179,8 +179,33 @@ const dropTablesAndViews = async () => {
   await db.query('DROP SCHEMA IF EXISTS aud_event CASCADE');
 };
 
+const getOrganisationsByType = async (organisationType) => {
+  try {
+    const orgEntities = await organisations.findAll({
+      where: {
+        type: {
+          [Op.eq]: organisationType,
+        },
+      },
+    });
+
+    return orgEntities.map((org) => ({
+      osaId: org.dataValues.id,
+      name: org.dataValues.name,
+      urn: org.dataValues.urn,
+      localAuthority: org.dataValues.local_authority,
+      type: org.dataValues.type,
+      uid: org.dataValues.uid,
+      ukprn: org.dataValues.ukprn,
+    }));
+  } catch (e) {
+    throw e;
+  }
+};
+
 module.exports = {
   searchForUsers,
   getUserByUsername,
   dropTablesAndViews,
+  getOrganisationsByType,
 };

@@ -57,9 +57,14 @@ const removeUserAccessToService = async (userId, organisationId, serviceId, corr
   await callApi('DELETE', `/organisations/${organisationId}/services/${serviceId}/users/${userId}`, undefined, correlationId);
 };
 
+const upsertOrganisation = async (organisation, correlationId) => {
+  await callApi('POST', '/organisations', organisation, correlationId);
+};
+
 module.exports = {
   getOrganisationByExternalId,
   setUserRoleAtOrganisation,
   setUserAccessToService,
   removeUserAccessToService,
+  upsertOrganisation,
 };

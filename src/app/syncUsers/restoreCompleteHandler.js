@@ -21,11 +21,7 @@ const getUsersFromPageThatMigrated = (pageOfUsers) => {
   });
   return flatten(migratedUserMapping);
 };
-
-const handleRestoreComplete = async (id, queue) => {
-  logger.info(`Received osarestorecomplete event (id: ${id})`);
-
-  const correlationId = `osarestorecomplete-${id}`;
+const queueMigratedUsersForSync = async (correlationId, queue) => {
   let pageNumber = 1;
   let hasMorePages = true;
   while (hasMorePages) {
@@ -43,6 +39,36 @@ const handleRestoreComplete = async (id, queue) => {
     pageNumber += 1;
     hasMorePages = pageNumber <= pageOfUsers.numberOfPages;
   }
+};
+
+const queueOrgTypeForSync = async (orgType, queue) => {
+  return new Promise((resolve, reject) => {
+    const queuedJob = queue.create('syncosaorgtype', { orgType });
+    queuedJob.save((err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(queuedJob.id);
+      }
+    });
+  });
+};
+const queueOrgTypesForSync = async (correlationId, queue) => {
+  const orgTypesToSync = ['001', '004', '008', '009', '010', '011', '012', '013'];
+  for (let i = 0; i < orgTypesToSync.length; i += 1) {
+    const jobId = await queueOrgTypeForSync(orgTypesToSync[i], queue);
+    logger.info(`Sent syncosaorgtype for ${orgTypesToSync[i]}, job id ${jobId}`);
+  }
+};
+
+const handleRestoreComplete = async (id, queue) => {
+  logger.info(`Received osarestorecomplete event (id: ${id})`);
+
+  const correlationId = `osarestorecomplete-${id}`;
+
+  await queueMigratedUsersForSync(correlationId, queue);
+  await queueOrgTypesForSync(correlationId, queue);
+
   logger.info(`Finished processing osarestorecomplete event (id: ${id})`);
 };
 

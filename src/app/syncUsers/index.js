@@ -3,6 +3,7 @@ const config = require('./../../infrastructure/config');
 const logger = require('./../../infrastructure/logger');
 const handleRestoreComplete = require('./restoreCompleteHandler');
 const handleSyncOsaUser = require('./syncOsaUserHandler');
+const syncOsaOrgTypeHandler = require('./syncOsaOrgTypeHandler');
 
 let queue;
 
@@ -24,6 +25,13 @@ const startMonitoring = () => {
   logger.info('Monitoring for syncosauser events');
   queue.process('syncosauser', (job, done) => {
     handleSyncOsaUser(job.id, job.data.osaUsername, job.data.userId)
+      .then(() => done())
+      .catch(e => done(e));
+  });
+
+  logger.info('Monitoring for syncosaorgtype events');
+  queue.process('syncosaorgtype', (job, done) => {
+    syncOsaOrgTypeHandler(job.id, job.data.orgType)
       .then(() => done())
       .catch(e => done(e));
   });
