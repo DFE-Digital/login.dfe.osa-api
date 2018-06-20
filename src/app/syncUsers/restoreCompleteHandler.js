@@ -43,7 +43,7 @@ const queueMigratedUsersForSync = async (correlationId, queue) => {
 
 const queueOrgTypeForSync = async (orgType, queue) => {
   return new Promise((resolve, reject) => {
-    const queuedJob = queue.create('syncosaorgtype', { orgType });
+    const queuedJob = queue.create('syncosaorgtype', { orgType, startAtPage: 1 });
     queuedJob.save((err) => {
       if (err) {
         reject(err);
@@ -54,7 +54,7 @@ const queueOrgTypeForSync = async (orgType, queue) => {
   });
 };
 const queueOrgTypesForSync = async (correlationId, queue) => {
-  const orgTypesToSync = ['001', '004', '008', '009', '010', '011', '012', '013'];
+  const orgTypesToSync = ['001', '002', '004', '008', '009', '010', '011', '012', '013'];
   for (let i = 0; i < orgTypesToSync.length; i += 1) {
     const jobId = await queueOrgTypeForSync(orgTypesToSync[i], queue);
     logger.info(`Sent syncosaorgtype for ${orgTypesToSync[i]}, job id ${jobId}`);

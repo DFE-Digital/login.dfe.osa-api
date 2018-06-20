@@ -31,7 +31,7 @@ const startMonitoring = () => {
 
   logger.info('Monitoring for syncosaorgtype events');
   queue.process('syncosaorgtype', (job, done) => {
-    syncOsaOrgTypeHandler(job.id, job.data.orgType)
+    syncOsaOrgTypeHandler(job.id, job.data.orgType, job.data.startAtPage)
       .then(() => done())
       .catch(e => done(e));
   });
