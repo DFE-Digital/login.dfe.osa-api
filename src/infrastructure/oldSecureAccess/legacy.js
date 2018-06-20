@@ -179,14 +179,18 @@ const dropTablesAndViews = async () => {
   await db.query('DROP SCHEMA IF EXISTS aud_event CASCADE');
 };
 
-const getOrganisationsByType = async (organisationType) => {
+const getOrganisationsByType = async (organisationType, pageNumber = 1, pageSize = 500) => {
   try {
+    const offset = (pageNumber - 1) * pageSize;
     const orgEntities = await organisations.findAll({
       where: {
         type: {
           [Op.eq]: organisationType,
         },
       },
+      order: ['name'],
+      offset,
+      limit: pageSize,
     });
 
     return orgEntities.map((org) => ({
