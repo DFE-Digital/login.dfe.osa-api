@@ -42,6 +42,7 @@ const restoreBackup = async (backupLocation, host, port, dbname, username, passw
           '--schema=public',
           '--clean',
           '--if-exists',
+          '--no-owner',
         ];
         if (username) {
           args.push(`--username=${username}`);
@@ -90,36 +91,50 @@ class DataRestorer {
     const backupDbName = tempDbName.replace('restore', 'backup');
 
     let dropBackupDb = false;
-    const primaryClient = new DatabaseClient(host, port, primaryDbName, username, password, useSSL);
+    const postgresClient = new DatabaseClient(host, port, 'postgres', username, password, useSSL);
     const tempClient = new DatabaseClient(host, port, tempDbName, username, password, useSSL);
-    await primaryClient.connect();
+
+    logger.info('Connecting to postgres');
+    await postgresClient.connect();
+    try {
+      logger.info(`Attempting to drop temp db ${tempDbName}`);
+      await postgresClient.dropDatabase(tempDbName);
+    } catch (e) {
+      if (e.message !== `Error dropping database ${tempDbName} - database "${tempDbName}" does not exist`) {
+        logger.warn(`Could not drop temp db ${tempDbName} - ${e.message}`);
+      }
+    }
+
     try {
       logger.info(`Create temp database ${tempDbName}`);
-      await primaryClient.createDatabase(tempDbName);
+      await postgresClient.createDatabase(tempDbName);
+
+      logger.info('Connect to databases');
       await tempClient.connect();
 
-      logger.info('Prepare temp database')
+      logger.info('Prepare temp database');
       await tempClient.prepareDatabase();
 
       await restoreBackup(this.backupPath, host, port, tempDbName, username, password);
 
       logger.info('Rename current database');
-      await primaryClient.renameDatabase(backupDbName);
+      await postgresClient.renameDatabase(primaryDbName, backupDbName);
       dropBackupDb = true;
 
       logger.info('Rename temp database');
-      await tempClient.renameDatabase(primaryDbName);
+      await tempClient.disconnect();
+      await postgresClient.renameDatabase(tempDbName, primaryDbName);
     } finally {
       if (dropBackupDb) {
         try {
           logger.info('Drop backup database');
-          await primaryClient.dropDatabase();
+          await postgresClient.dropDatabase(backupDbName);
         } catch (e) {
           logger.warn(e.message);
         }
       }
 
-      await primaryClient.disconnect();
+      await postgresClient.disconnect();
       await tempClient.disconnect();
     }
   }
