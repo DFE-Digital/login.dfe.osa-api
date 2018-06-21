@@ -51,37 +51,20 @@ class DatabaseClient {
     }
   }
 
-  async dropDatabase() {
-    const renameClient = new Client({
-      user: this.details.username,
-      host: this.details.host,
-      database: 'postgres',
-      password: this.details.password,
-      port: this.details.port,
-      ssl: this.details.ssl || false,
-    });
-
-    try {
-      await renameClient.connect();
-    } catch (e) {
-      throw new Error(`Error connecting to postgres to drop database from ${this.details.dbName} - ${e.message}`);
-    }
-
+  async dropDatabase(databaseName) {
     try {
       await this.client.query('SELECT pg_terminate_backend(pg_stat_activity.pid) ' +
         'FROM pg_stat_activity ' +
-        `WHERE pg_stat_activity.datname = '${this.details.dbName}' ` +
+        `WHERE pg_stat_activity.datname = '${databaseName}' ` +
         'AND pid <> pg_backend_pid();');
-
-      await this.disconnect();
     } catch (e) {
-      throw new Error(`Error disconnection clients from ${this.details.dbName} - ${e.message}`);
+      throw new Error(`Error disconnection clients from ${databaseName} - ${e.message}`);
     }
 
     try {
-      await renameClient.query(`DROP DATABASE ${this.details.dbName}`);
+      await this.client.query(`DROP DATABASE ${databaseName}`);
     } catch (e) {
-      throw new Error(`Error dropping database ${this.details.dbName} - ${e.message}`);
+      throw new Error(`Error dropping database ${databaseName} - ${e.message}`);
     }
   }
 
@@ -105,57 +88,20 @@ class DatabaseClient {
     }
   }
 
-  async renameDatabase(newDbName) {
-    const renameClient = new Client({
-      user: this.details.username,
-      host: this.details.host,
-      database: 'postgres',
-      password: this.details.password,
-      port: this.details.port,
-      ssl: this.details.ssl || false,
-    });
-
+  async renameDatabase(oldDbName, newDbName) {
     try {
       await this.client.query('SELECT pg_terminate_backend(pg_stat_activity.pid) ' +
         'FROM pg_stat_activity ' +
-        `WHERE pg_stat_activity.datname = '${this.details.dbName}' ` +
+        `WHERE pg_stat_activity.datname = '${oldDbName}' ` +
         'AND pid <> pg_backend_pid();');
-
-      await this.disconnect();
     } catch (e) {
-      throw new Error(`Error disconnection clients from ${this.details.dbName} - ${e.message}`);
+      throw new Error(`Error disconnection clients from ${oldDbName} - ${e.message}`);
     }
 
     try {
-      await renameClient.connect();
+      await this.client.query(`ALTER DATABASE ${oldDbName} RENAME TO ${newDbName}`);
     } catch (e) {
-      throw new Error(`Error connecting to postgres to rename database from ${this.details.dbName} to ${newDbName} - ${e.message}`);
-    }
-
-    try {
-      try {
-        await renameClient.query(`ALTER DATABASE ${this.details.dbName} RENAME TO ${newDbName}`);
-      } catch (e) {
-        throw new Error(`Error renaming database from ${this.details.dbName} to ${newDbName} - ${e.message}`);
-      }
-
-      this.details.dbName = newDbName;
-
-      try {
-        this.client = new Client({
-          user: this.details.username,
-          host: this.details.host,
-          database: this.details.dbName,
-          password: this.details.password,
-          port: this.details.port,
-          ssl: this.details.ssl || false,
-        });
-        await this.connect();
-      } catch (e) {
-        throw new Error(`Error switching connection to new database ${newDbName}`);
-      }
-    } finally {
-      renameClient.end();
+      throw new Error(`Error renaming database from ${oldDbName} to ${newDbName} - ${e.message}`);
     }
   }
 }
