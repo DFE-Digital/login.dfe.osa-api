@@ -12,6 +12,7 @@ const DataRestorer = require('./DataRestorer');
 const kue = require('kue');
 
 const mkdirAsync = promisify(fs.mkdir);
+const unlinkAsync = promisify(fs.unlink);
 
 const s3Config = config.oldSecureAccess.backup;
 if (s3Config && s3Config.accessKey && s3Config.accessSecret) {
@@ -136,62 +137,6 @@ const downloadAndDecryptBackupToDisk = async () => {
     throw new Error(`Error downloading OSA backup - ${e.message}`);
   }
 };
-const restoreBackup = async (backupLocation) => {
-  let postgresDir = resolvePath('./external_modules/postgres');
-  let platformDir = 'MacOS';
-  if (process.platform.match(/^win/i)) {
-    platformDir = 'Windows-x86';
-    postgresDir = resolvePath('../external_modules/postgres');
-  }
-  const pgrestoreDir = joinPathes(postgresDir, platformDir);
-
-
-  const stdoutLog = fs.createWriteStream(`${backupLocation.substr(0, backupLocation.length - 6)}.stdout.log`);
-  const stderrLog = fs.createWriteStream(`${backupLocation.substr(0, backupLocation.length - 6)}.stderr.log`);
-  try {
-    await new Promise((resolve, reject) => {
-      try {
-        const opts = {
-          cwd: pgrestoreDir,
-          env: Object.assign({ PGPASSWORD: config.oldSecureAccess.params.password }, process.env),
-        };
-        const args = [
-          `--host=${config.oldSecureAccess.params.host}`,
-          `--port=${config.oldSecureAccess.params.port}`,
-          `--dbname=${config.oldSecureAccess.params.name}`,
-          '--clean',
-          '--if-exists',
-        ];
-        if (config.oldSecureAccess.params.username) {
-          args.push(`--username=${config.oldSecureAccess.params.username}`);
-        }
-        args.push(backupLocation);
-
-        logger.info(`spawning pg_restore in ${opts.cwd} to restore ${backupLocation}`);
-        const proc = spawn(`${pgrestoreDir}/pg_restore`, args, opts);
-        proc.stdout.on('data', (data) => {
-          stdoutLog.write(data);
-        });
-        proc.stderr.on('data', (data) => {
-          stderrLog.write(data);
-        });
-        proc.on('close', (code) => {
-          if (code === 0) {
-            logger.info(`pg_restore of ${backupLocation} completed successfully`);
-            resolve();
-          } else {
-            reject(new Error(`pg_restore exited with code ${code}`));
-          }
-        })
-      } catch (e) {
-        reject(e.message);
-      }
-    });
-  } finally {
-    stdoutLog.end();
-    stderrLog.end();
-  }
-};
 const storeFiles = async (backupLocation) => {
   const backupStdoutLocation = `${backupLocation.substr(0, backupLocation.length - 6)}.stdout.log`;
   const backupStderrLocation = `${backupLocation.substr(0, backupLocation.length - 6)}.stderr.log`;
@@ -221,6 +166,26 @@ const notifyRestoreComplete = async () => {
     });
   });
 };
+const deleteFile = async (path) => {
+  try {
+    logger.info(`Deleting file ${path}`);
+    await unlinkAsync(path);
+  } catch (e) {
+    if (e.code !== 'ENOENT') {
+      throw e;
+    }
+  }
+};
+const deleteDownloadsLocally = async (backupLocation) => {
+  const backupStdoutLocation = `${backupLocation.substr(0, backupLocation.length - 6)}.stdout.log`;
+  const backupStderrLocation = `${backupLocation.substr(0, backupLocation.length - 6)}.stderr.log`;
+
+  await Promise.all([
+    deleteFile(backupStderrLocation),
+    deleteFile(backupStdoutLocation),
+    deleteFile(backupLocation),
+  ]);
+};
 
 const downloadAndRestoreOsaBackup = async () => {
   try {
@@ -232,6 +197,8 @@ const downloadAndRestoreOsaBackup = async () => {
     await notifyRestoreComplete();
 
     await storeFiles(backupPath);
+
+    await deleteDownloadsLocally(backupPath);
   } catch (e) {
     logger.error(e.message);
   }
