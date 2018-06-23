@@ -115,14 +115,21 @@ class DataRestorer {
       logger.info('Prepare temp database');
       await tempClient.prepareDatabase();
 
+      // Disconnect while we restore. It takes a while and our connection often gets killed
+      logger.info('Disconnecting for restore');
+      await tempClient.disconnect();
+      await postgresClient.disconnect();
+
       await restoreBackup(this.backupPath, host, port, tempDbName, username, password);
+
+      logger.info('Reconnecting after restore');
+      await postgresClient.connect();
 
       logger.info('Rename current database');
       await postgresClient.renameDatabase(primaryDbName, backupDbName);
       dropBackupDb = true;
 
       logger.info('Rename temp database');
-      await tempClient.disconnect();
       await postgresClient.renameDatabase(tempDbName, primaryDbName);
     } finally {
       if (dropBackupDb) {
