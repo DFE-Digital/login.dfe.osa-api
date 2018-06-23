@@ -10,20 +10,21 @@ class DatabaseClient {
       password,
       useSSL,
     };
-    this.client = new Client({
-      user: username,
-      host,
-      database: dbName,
-      password,
-      port,
-      ssl: useSSL || false,
-    });
+
     this.isConnected = false;
   }
 
   async connect() {
     if (!this.isConnected) {
       try {
+        this.client = new Client({
+          user: this.details.username,
+          host: this.details.host,
+          database: this.details.dbName,
+          password: this.details.password,
+          port: this.details.port,
+          ssl: this.details.useSSL || false,
+        });
         await this.client.connect();
         this.isConnected = true;
       } catch (e) {
