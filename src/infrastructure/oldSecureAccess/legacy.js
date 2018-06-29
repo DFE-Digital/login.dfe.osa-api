@@ -157,7 +157,7 @@ const getUserByUsername = async (username) => {
     const userEntity = await users.find({
       where: {
         username: {
-          [Op.eq]: username,
+          [Op.eq]: username.toLowerCase(),
         },
       },
       include: ['org', 'groups'],
