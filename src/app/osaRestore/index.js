@@ -14,6 +14,8 @@ const kue = require('kue');
 const mkdirAsync = promisify(fs.mkdir);
 const unlinkAsync = promisify(fs.unlink);
 
+const awsDownloadBloackSize = 52428800;
+
 const s3Config = config.oldSecureAccess.backup;
 if (s3Config && s3Config.accessKey && s3Config.accessSecret) {
   aws.config.update({
@@ -108,9 +110,9 @@ const downloadAndDecryptBackupToDisk = async () => {
     let decoder;
     let totalLength = -1;
     while (totalLength === -1 || offset < totalLength) {
-      let downloadLength = totalLength === -1 ? 1048576 : totalLength - offset;
-      if (downloadLength > 1048576) {
-        downloadLength = 1048576;
+      let downloadLength = totalLength === -1 ? awsDownloadBloackSize : totalLength - offset;
+      if (downloadLength > awsDownloadBloackSize) {
+        downloadLength = awsDownloadBloackSize;
       }
       logger.debug(`Downloading ${downloadLength} bytes, starting at ${offset} for ${objectKey} (total length: ${totalLength === -1 ? 'unknown' : totalLength})`);
 
