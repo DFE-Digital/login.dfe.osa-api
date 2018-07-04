@@ -29,6 +29,7 @@ const serviceMapping = [
   // { code: 'Post16CoursePortal', id: '88257043-c89c-4772-ab51-49f4d73f3339' },
   // { code: 'EduBase', id: '2f706180-071a-43bb-a21c-b73f6a8cdab8' },
   { code: 'RAISEonline', id: 'df2ae7f3-917a-4489-8a62-8b9b536a71cc' },
+  { code: 'AnalyseSchoolPerformance', id: 'df2ae7f3-917a-4489-8a62-8b9b536a71cc' },
 ];
 
 openpgp.config.ignore_mdc_error = true;
