@@ -1,13 +1,9 @@
 const config = require('./../../../infrastructure/config');
 const Redis = require('ioredis');
 
-let redis;
+const redis = new Redis(config.sync.connectionString, { keyPrefix: 'osa:' });
 
 const getPreviousDetailsForUser = async (username) => {
-  if (!redis) {
-    redis = new Redis(config.sync.connectionString, { keyPrefix: 'osa:' });
-  }
-
   const json = await redis.get(username.toLowerCase());
   if (!json) {
     return null;
@@ -17,10 +13,6 @@ const getPreviousDetailsForUser = async (username) => {
 };
 
 const setPreviousDetailsForUser = async (username, details) => {
-  if (!redis) {
-    redis = new Redis(config.sync.connectionString, { keyPrefix: 'osa:' });
-  }
-
   const json = JSON.stringify(details);
   await redis.set(username.toLowerCase(), json);
 };
