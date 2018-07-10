@@ -11,7 +11,7 @@ const rp = require('request-promise').defaults({
 const jwtStrategy = require('login.dfe.jwt-strategies');
 
 const callApi = async (method, resource, body, correlationId) => {
-  const token = await jwtStrategy(config.directories.service).getBearerToken();
+  const token = await jwtStrategy(config.organisations.service).getBearerToken();
 
   try {
     const opts = {
