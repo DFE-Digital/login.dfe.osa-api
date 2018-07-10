@@ -4,16 +4,9 @@ const { getPreviousDetailsForUser, setPreviousDetailsForUser } = require('./cach
 const { setUserRoleAtOrganisation, setUserAccessToService, removeUserAccessToService, getOrganisationByExternalId } = require('./../../infrastructure/organisations');
 
 const getOrganisationId = async (osaOrganisation) => {
-  let externalId = osaOrganisation.urn;
-  if (osaOrganisation.type === '010' || osaOrganisation.type === '013') {
-    externalId = osaOrganisation.uid;
-  } else if (osaOrganisation.type === '002') {
-    externalId = osaOrganisation.localAuthority;
-  }
-
-  const organisation = await getOrganisationByExternalId(osaOrganisation.type, externalId);
+  const organisation = await getOrganisationByExternalId('000', osaOrganisation.osaId);
   if (!organisation) {
-    throw new Error(`Cannot find organisation in DfE Sign-in (type:${osaOrganisation.type}, id:${externalId})`);
+    throw new Error(`Cannot find organisation in DfE Sign-in (type:${osaOrganisation.type}, id:${osaOrganisation.osaId})`);
   }
   return organisation.id;
 };
