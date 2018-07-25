@@ -9,29 +9,40 @@ const rp = require('request-promise').defaults({
   }),
 });
 const jwtStrategy = require('login.dfe.jwt-strategies');
+const promiseRetry = require('promise-retry');
 
 const callApi = async (method, resource, body, correlationId) => {
-  const token = await jwtStrategy(config.organisations.service).getBearerToken();
+  const retryOpts = {
+    retries: config.organisations.service.numberOfRetries || 2,
+    factor: config.organisations.service.retryFactor || 2,
+  };
 
-  try {
-    const opts = {
-      method,
-      uri: `${config.organisations.service.url}/${resource}`,
-      headers: {
-        authorization: `bearer ${token}`,
-        'x-correlation-id': correlationId,
-      },
-      json: true,
-    };
-    if (body) {
-      opts.body = body;
+  await promiseRetry(async (retry) => {
+    const token = await jwtStrategy(config.organisations.service).getBearerToken();
+
+    try {
+      const opts = {
+        method,
+        uri: `${config.organisations.service.url}/${resource}`,
+        headers: {
+          authorization: `bearer ${token}`,
+          'x-correlation-id': correlationId,
+        },
+        json: true,
+      };
+      if (body) {
+        opts.body = body;
+      }
+      const result = await rp(opts);
+
+      return result;
+    } catch (e) {
+      if (e.statusCode > 400 && e.statusCode < 500) {
+        retry(e);
+      }
+      throw e;
     }
-    const result = await rp(opts);
-
-    return result;
-  } catch (e) {
-    throw e;
-  }
+  }, retryOpts);
 };
 
 const getOrganisationByExternalId = async (type, externalId, correlationId) => {

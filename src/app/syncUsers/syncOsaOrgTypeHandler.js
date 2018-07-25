@@ -28,7 +28,11 @@ const syncOsaOrgTypeHandler = async (id, orgType, startAtPage) => {
       });
       for (let i = 0; i < organisations.length; i += 1) {
         logger.info(`Syncing org ${organisations[i].legacyId} of type ${orgType} from page ${pageNumber}`);
-        await upsertOrganisation(organisations[i]);
+        try {
+          await upsertOrganisation(organisations[i]);
+        } catch (e) {
+          logger.error(`Error syncing org ${organisations[i].legacyId} of type ${orgType} from page ${pageNumber} - ${e.message}`);
+        }
       }
       hasMorePages = organisations.length > 0;
       pageNumber += 1;
