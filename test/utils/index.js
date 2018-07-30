@@ -3,6 +3,12 @@ const mockConfig = (customConfig) => {
     directories: {
       type: 'static',
     },
+    oldSecureAccess: {
+      type: 'static',
+    },
+    sync: {
+      connectionString: 'sync-connstring',
+    },
   };
   return Object.assign(config, customConfig);
 };

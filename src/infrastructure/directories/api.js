@@ -32,6 +32,31 @@ const getPageOfUsers = async (pageNumber, correlationId) => {
   }
 };
 
+const getUserForSAUsername = async (username, correlationId) => {
+  const token = await jwtStrategy(config.directories.service).getBearerToken();
+
+  try {
+    const uri = `${config.directories.service.url}/users/by-legacyusername/${username}`;
+    const user = await rp({
+      method: 'GET',
+      uri,
+      headers: {
+        authorization: `bearer ${token}`,
+        'x-correlation-id': correlationId,
+      },
+      json: true,
+    });
+
+    return user;
+  } catch (e) {
+    if (e.statusCode === 404) {
+      return undefined;
+    }
+    throw e;
+  }
+};
+
 module.exports = {
   getPageOfUsers,
+  getUserForSAUsername,
 };
