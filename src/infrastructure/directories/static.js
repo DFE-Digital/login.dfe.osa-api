@@ -5,6 +5,11 @@ const getPageOfUsers = async (pageNumber, correlationId) => {
   });
 };
 
+const getUserForSAUsername = async (username, correlationId) => {
+  return Promise.resolve(undefined);
+};
+
 module.exports = {
   getPageOfUsers,
+  getUserForSAUsername,
 };
