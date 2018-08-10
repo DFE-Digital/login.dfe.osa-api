@@ -17,7 +17,7 @@ const callApi = async (method, resource, body, correlationId) => {
     factor: config.organisations.service.retryFactor || 2,
   };
 
-  await promiseRetry(async (retry) => {
+  return promiseRetry(async (retry) => {
     const token = await jwtStrategy(config.organisations.service).getBearerToken();
 
     try {
