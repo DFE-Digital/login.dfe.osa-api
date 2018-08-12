@@ -15,9 +15,9 @@ const safeRoleMapping = [
   { osa: 'administrator', nsa: { id: 10000, name: 'Approver' } },
 ];
 const serviceMapping = [
-  { code: 'KTS', id: '3bfde961-f061-4786-b618-618deaf96e44' },
-  // { code: 'COLLECT', id: 'fb27f118-c7cc-4ce4-a2aa-6255cfd34cf0' },
-  // { code: 'S2S', id: '8c3b6436-8249-4c73-8a35-fceb18cf7bf1' },
+  { code: 'KTS', id: '57e972f8-0eda-4f0f-aaf9-50b55662c528' },
+  { code: 'COLLECT', id: '4fd40032-61a6-4beb-a6c4-6b39a3af81c1' },
+  { code: 'S2S', id: '09abfb35-3d09-41a7-9e4e-b8512b9b7d5e' },
   { code: 'EvolveTSS', id: 'e6c15ca4-b29a-41c3-9c36-274d6bca3cb2' },
   { code: 'CustomerExchange', id: '913ba321-9547-46b2-93c3-a7a7ffc2e3e2' },
   { code: 'CustomerExchangeTest', id: '913ba321-9547-46b2-93c3-a7a7ffc2e3e2' },
