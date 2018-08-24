@@ -30,6 +30,8 @@ const searchForUsers = async criteria => users.filter(user => user.email.toLower
 
 const getUserByUsername = async username => users.find(user => user.username.toLowerCase() === username.toLowerCase());
 
+const getUserByEmail = async email => users.find(user => user.email.toLowerCase() === email.toLowerCase());
+
 const dropTablesAndViews = async () => {
   return Promise.resolve();
 };
@@ -37,5 +39,6 @@ const dropTablesAndViews = async () => {
 module.exports = {
   searchForUsers,
   getUserByUsername,
+  getUserByEmail,
   dropTablesAndViews,
 };
