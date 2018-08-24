@@ -173,6 +173,25 @@ const getUserByUsername = async (username) => {
   }
 };
 
+const getUserByEmail = async (email) => {
+  try {
+    const userEntity = await users.find({
+      where: {
+        email: {
+          [Op.eq]: email.toLowerCase(),
+        },
+      },
+      include: ['org', 'groups'],
+    });
+    if (!userEntity) {
+      return null;
+    }
+    return await mapUserEntity(userEntity);
+  } catch (e) {
+    throw e;
+  }
+};
+
 const dropTablesAndViews = async () => {
   await db.query('DROP SCHEMA IF EXISTS public CASCADE');
   await db.query('DROP SCHEMA IF EXISTS aud_saml CASCADE');
@@ -210,6 +229,7 @@ const getOrganisationsByType = async (organisationType, pageNumber = 1, pageSize
 module.exports = {
   searchForUsers,
   getUserByUsername,
+  getUserByEmail,
   dropTablesAndViews,
   getOrganisationsByType,
 };
