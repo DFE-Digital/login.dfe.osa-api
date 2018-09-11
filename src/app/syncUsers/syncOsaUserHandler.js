@@ -1,7 +1,8 @@
 const logger = require('./../../infrastructure/logger');
 const { getUserByUsername: getOsaUser } = require('./../../infrastructure/oldSecureAccess');
 const { getPreviousDetailsForUser, setPreviousDetailsForUser } = require('./cache');
-const { setUserRoleAtOrganisation, setUserAccessToService, removeUserAccessToService, getOrganisationByExternalId } = require('./../../infrastructure/organisations');
+const { setUserRoleAtOrganisation, getOrganisationByExternalId } = require('./../../infrastructure/organisations');
+const { setUserAccessToService, removeUserAccessToService } = require('./../../infrastructure/access');
 
 const getOrganisationId = async (osaOrganisation) => {
   const organisation = await getOrganisationByExternalId('000', osaOrganisation.osaId);
@@ -34,7 +35,7 @@ const addNewServices = async (osaUser, previous, userId, correlationId) => {
       { key: 'saUserName', value: osaUser.username },
     ];
 
-    await setUserAccessToService(userId, osaUser.organisation.id, service.id, externalIdentifiers, correlationId);
+    await setUserAccessToService(userId, service.id, osaUser.organisation.id, externalIdentifiers, correlationId);
 
     logger.info(`added service ${service.name} (${service.id}) to ${osaUser.username} / ${userId}`);
   }
@@ -48,7 +49,7 @@ const removeOldServices = async (osaUser, previous, userId, correlationId) => {
   for (let i = 0; i < removedServices.length; i += 1) {
     const service = removedServices[i];
 
-    await removeUserAccessToService(userId, osaUser.organisation.id, service.id, correlationId);
+    await removeUserAccessToService(userId, service.id, osaUser.organisation.id, correlationId);
 
     logger.info(`remove service ${service.name} (${service.id}) from ${osaUser.username} / ${userId}`);
   }
