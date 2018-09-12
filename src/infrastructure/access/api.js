@@ -1,4 +1,4 @@
-const config = require('./../config')();
+const config = require('./../config');
 const KeepAliveAgent = require('agentkeepalive').HttpsAgent;
 const rp = require('request-promise').defaults({
   agent: new KeepAliveAgent({
