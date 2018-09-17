@@ -23,7 +23,7 @@ const setUserAccessToService = async (userId, serviceId, organisationId, externa
         'x-correlation-id': correlationId,
       },
       body: {
-        externalIdentifiers,
+        identifiers: externalIdentifiers,
       },
       json: true,
     });
