@@ -3,6 +3,12 @@ const mockConfig = (customConfig) => {
     directories: {
       type: 'static',
     },
+    organisations: {
+      type: 'static',
+    },
+    access: {
+      type: 'static',
+    },
     oldSecureAccess: {
       type: 'static',
     },
