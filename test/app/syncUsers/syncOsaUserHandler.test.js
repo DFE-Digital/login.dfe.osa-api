@@ -1,5 +1,6 @@
 jest.mock('./../../../src/infrastructure/config', () => require('./../../utils').mockConfig());
 jest.mock('./../../../src/infrastructure/logger', () => require('./../../utils').mockLogger());
+jest.mock('ioredis');
 jest.mock('./../../../src/infrastructure/oldSecureAccess');
 jest.mock('./../../../src/app/syncUsers/cache');
 jest.mock('./../../../src/infrastructure/organisations');
