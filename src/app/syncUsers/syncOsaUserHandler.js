@@ -20,14 +20,19 @@ const updateRole = async (osaUser, previous, userId, correlationId) => {
 
   logger.info(`updated role of ${osaUser.username} / ${userId} to ${osaUser.organisation.role.name} (${osaUser.organisation.role.id})`);
 };
-const addNewServices = async (osaUser, previous, userId, correlationId) => {
-  let newServices = osaUser.services;
+const upsertNewAndUpdatedServices = async (osaUser, previous, userId, correlationId) => {
+  let newAndUpdatedServices = osaUser.services;
   if (previous) {
-    newServices = osaUser.services.filter(s => !previous.services.find(ps => ps.id === s.id));
+    newAndUpdatedServices = osaUser.services.filter((s) => {
+      const prev = previous.services.find(ps => ps.id === s.id);
+      const newRoles = (s.roles || []).join(',');
+      const prevRoles = prev ? (prev.roles || []).join(',') : '';
+      return !prev || newRoles !== prevRoles;
+    });
   }
 
-  for (let i = 0; i < newServices.length; i += 1) {
-    const service = newServices[i];
+  for (let i = 0; i < newAndUpdatedServices.length; i += 1) {
+    const service = newAndUpdatedServices[i];
     const externalIdentifiers = [
       { key: 'organisationId', value: osaUser.organisation.osaId },
       { key: 'groups', value: (service.roles || []).join(',') },
@@ -65,7 +70,7 @@ const handleSyncOsaUser = async (id, osaUsername, userId) => {
     osaUser.organisation.id = await getOrganisationId(osaUser.organisation);
 
     await updateRole(osaUser, previous, userId, correlationId);
-    await addNewServices(osaUser, previous, userId, correlationId);
+    await upsertNewAndUpdatedServices(osaUser, previous, userId, correlationId);
     await removeOldServices(osaUser, previous, userId, correlationId);
 
     await setPreviousDetailsForUser(osaUsername, {
