@@ -54,7 +54,7 @@ const mapUserEntity = async (user) => {
   const userServiceRoles = user.groups.filter(group => group.application.toString() !== SAFE_APPLICATION_ID);
   const userSafeRoles = user.groups.filter(group => group.application.toString() === SAFE_APPLICATION_ID)
     .map(group => safeRoleMapping.find(mapping => mapping.osa === group.code))
-    .filter(role => role !== null)
+    .filter(role => role !== null && role !== undefined)
     .sort((x, y) => {
       if (x === null) {
         return 1;
@@ -114,7 +114,7 @@ const mapUserEntity = async (user) => {
       localAuthority: user.org.dataValues.local_authority,
       type: user.org.dataValues.type,
       uid: user.org.dataValues.uid,
-      role: userSafeRoles.length > 0 ? userSafeRoles[0].nsa : null,
+      role: userSafeRoles.length > 0 ? userSafeRoles[0].nsa : safeRoleMapping[0].nsa,
     },
     // role: userSafeRoles.length > 0 ? userSafeRoles[0].nsa : null,
     services,
