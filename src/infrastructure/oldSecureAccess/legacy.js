@@ -116,6 +116,7 @@ const mapUserEntity = async (user) => {
       uid: user.org.dataValues.uid,
       role: userSafeRoles.length > 0 ? userSafeRoles[0].nsa : safeRoleMapping[0].nsa,
     },
+    status: user.dataValues.status,
     // role: userSafeRoles.length > 0 ? userSafeRoles[0].nsa : null,
     services,
   };

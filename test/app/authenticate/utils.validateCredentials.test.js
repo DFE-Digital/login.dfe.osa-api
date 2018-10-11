@@ -45,12 +45,25 @@ describe('When validating the user', () => {
 
     expect(actual).toBeNull();
   });
+  it('then if the users account is archived null is returned', async () => {
+    getUserByUserName.mockReset().mockReturnValue({
+      salt: '',
+      username: 'testusername',
+      password: 'e8603172175d138e1724d75c91f788738fcbcc74fc98ee68837075bbb0aaf0f6db567cca1b61ec57ad646d79e39b3b2ed452b8a048f22b265fb74b8a244a828c',
+      email: 'test@username.local',
+      status: 'archived',
+    });
+
+    const actual = await util.validateOsaCredentials('testusername', 'testpwd');
+    expect(actual).toBeNull();
+  });
   it('then if the users credentials are correct the user is returned', async () => {
     getUserByUserName.mockReset().mockReturnValue({
       salt: '',
       username: 'testusername',
       password: 'e8603172175d138e1724d75c91f788738fcbcc74fc98ee68837075bbb0aaf0f6db567cca1b61ec57ad646d79e39b3b2ed452b8a048f22b265fb74b8a244a828c',
       email: 'test@username.local',
+      status: 'active',
     });
 
     const actual = await util.validateOsaCredentials('testusername','testpwd');
