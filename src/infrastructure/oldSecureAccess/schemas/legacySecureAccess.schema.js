@@ -88,6 +88,9 @@ const users = db.define('safe_user', {
     as: 'org_id',
     type: Sequelize.BIGINT,
   },
+  status: {
+    type: Sequelize.STRING,
+  },
 }, {
   tableName: 'safe_user',
   timestamps: false,

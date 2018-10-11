@@ -15,13 +15,17 @@ const validateOsaCredentials = async (username, password) => {
     return null;
   }
 
-  const result = validateCredentials(username, password, user.salt, user.username, user.password);
+  if (user.status === 'imported' || user.status === 'active') {
+    const result = validateCredentials(username, password, user.salt, user.username, user.password);
 
-  if (result === false) {
-    return null;
+    if (result === false) {
+      return null;
+    }
+
+    return user;
   }
-
-  return user;
+  return null;
 };
+
 
 module.exports = { validateOsaCredentials };
