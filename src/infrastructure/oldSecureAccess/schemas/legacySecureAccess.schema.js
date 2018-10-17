@@ -48,6 +48,9 @@ if (config.oldSecureAccess.params.connectionString) {
       ssl: config.oldSecureAccess.params.ssl || false,
     },
   };
+  if (config.hostingEnvironment.env !== 'dev') {
+    dbOpts.logging = false;
+  }
   if (config.oldSecureAccess.params.pool) {
     dbOpts.pool = {
       max: getIntValueOrDefault(config.oldSecureAccess.params.pool.max, 5),
@@ -170,7 +173,12 @@ const applications = db.define('customer_application', {
 
 
 users.belongsTo(organisations, { as: 'org', foreignKey: 'organisation' });
-users.belongsToMany(groups, { as: 'groups', through: 'safe_user_to_user_group', foreignKey: 'safe_user', otherKey: 'user_group' });
+users.belongsToMany(groups, {
+  as: 'groups',
+  through: 'safe_user_to_user_group',
+  foreignKey: 'safe_user',
+  otherKey: 'user_group'
+});
 
 module.exports = {
   db,
