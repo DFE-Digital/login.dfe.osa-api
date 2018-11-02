@@ -118,23 +118,4 @@ describe('when a restore of osa has completed', () => {
     expect(getPageOfUsers.mock.calls[2][0]).toBe(3);
   });
 
-  it('then it should stop processing and throw error if unable to queue user for sync', async () => {
-    job.save.mockReset().mockImplementationOnce((callback) => {
-      setTimeout(callback, 1);
-    }).mockImplementationOnce((callback) => {
-      setTimeout(() => callback(new Error('test')), 1);
-    });
-
-    try {
-      await handleRestoreComplete(id, queue);
-      throw new Error('no error thrown');
-    } catch (e) {
-      expect(e.message).toBe('test');
-    }
-
-
-    expect(getPageOfUsers.mock.calls).toHaveLength(3);
-    expect(queue.create.mock.calls).toHaveLength(2);
-    expect(job.save.mock.calls).toHaveLength(2);
-  });
 });

@@ -60,7 +60,7 @@ const queueOrgTypeForSync = async (orgType, queue) => {
   });
 };
 const queueOrgTypesForSync = async (correlationId, queue) => {
-  const orgTypesToSync = ['001', '002', '004', '008', '009', '010', '011', '012', '013'];
+  const orgTypesToSync = ['001', '002', '003', '004', '008', '009', '010', '011', '012', '013'];
   for (let i = 0; i < orgTypesToSync.length; i += 1) {
     const jobId = await queueOrgTypeForSync(orgTypesToSync[i], queue);
     logger.info(`Sent syncosaorgtype for ${orgTypesToSync[i]}, job id ${jobId}`);
@@ -73,8 +73,8 @@ const handleRestoreComplete = async (id, queue) => {
 
     const correlationId = `osarestorecomplete-${id}`;
 
-    await queueMigratedUsersForSync(correlationId, queue);
     await queueOrgTypesForSync(correlationId, queue);
+    await queueMigratedUsersForSync(correlationId, queue);
 
     logger.info(`Finished processing osarestorecomplete event (id: ${id})`);
   } catch (e) {
