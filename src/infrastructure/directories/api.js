@@ -1,6 +1,6 @@
 const config = require('./../config');
 const KeepAliveAgent = require('agentkeepalive').HttpsAgent;
-const rp = require('request-promise').defaults({
+const rp = require('login.dfe.request-promise-retry').defaults({
   agent: new KeepAliveAgent({
     maxSockets: config.hostingEnvironment.agentKeepAlive.maxSockets,
     maxFreeSockets: config.hostingEnvironment.agentKeepAlive.maxFreeSockets,
@@ -11,11 +11,11 @@ const rp = require('request-promise').defaults({
 const jwtStrategy = require('login.dfe.jwt-strategies');
 
 
-const getPageOfUsers = async (pageNumber, correlationId) => {
+const getPageOfUsers = async (pageNumber, pageSize, correlationId) => {
   const token = await jwtStrategy(config.directories.service).getBearerToken();
 
   try {
-    const uri = `${config.directories.service.url}/users?page=${pageNumber}&include=legacyusernames`;
+    const uri = `${config.directories.service.url}/users?page=${pageNumber}&pageSize=${pageSize}&include=legacyusernames`;
     const pageOfUsers = await rp({
       method: 'GET',
       uri,

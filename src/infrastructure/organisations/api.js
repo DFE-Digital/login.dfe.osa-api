@@ -1,6 +1,6 @@
 const config = require('./../config');
 const KeepAliveAgent = require('agentkeepalive').HttpsAgent;
-const rp = require('request-promise').defaults({
+const rp = require('login.dfe.request-promise-retry').defaults({
   agent: new KeepAliveAgent({
     maxSockets: config.hostingEnvironment.agentKeepAlive.maxSockets,
     maxFreeSockets: config.hostingEnvironment.agentKeepAlive.maxFreeSockets,
@@ -9,40 +9,29 @@ const rp = require('request-promise').defaults({
   }),
 });
 const jwtStrategy = require('login.dfe.jwt-strategies');
-const promiseRetry = require('promise-retry');
 
 const callApi = async (method, resource, body, correlationId) => {
-  const retryOpts = {
-    retries: config.organisations.service.numberOfRetries || 2,
-    factor: config.organisations.service.retryFactor || 2,
-  };
+  const token = await jwtStrategy(config.organisations.service).getBearerToken();
 
-  return promiseRetry(async (retry) => {
-    const token = await jwtStrategy(config.organisations.service).getBearerToken();
-
-    try {
-      const opts = {
-        method,
-        uri: `${config.organisations.service.url}/${resource}`,
-        headers: {
-          authorization: `bearer ${token}`,
-          'x-correlation-id': correlationId,
-        },
-        json: true,
-      };
-      if (body) {
-        opts.body = body;
-      }
-      const result = await rp(opts);
-
-      return result;
-    } catch (e) {
-      if (e.statusCode > 400 && e.statusCode < 500) {
-        retry(e);
-      }
-      throw e;
+  try {
+    const opts = {
+      method,
+      uri: `${config.organisations.service.url}/${resource}`,
+      headers: {
+        authorization: `bearer ${token}`,
+        'x-correlation-id': correlationId,
+      },
+      json: true,
+    };
+    if (body) {
+      opts.body = body;
     }
-  }, retryOpts);
+    const result = await rp(opts);
+
+    return result;
+  } catch (e) {
+    throw e;
+  }
 };
 
 const getOrganisationByExternalId = async (type, externalId, correlationId) => {
