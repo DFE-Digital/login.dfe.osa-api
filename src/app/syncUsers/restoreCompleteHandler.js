@@ -23,11 +23,16 @@ const getUsersFromPageThatMigrated = (pageOfUsers) => {
 };
 const queueMigratedUsersForSync = async (correlationId, queue) => {
   let pageNumber = 1;
+  let numberOfPages;
   let hasMorePages = true;
   while (hasMorePages) {
-    logger.info(`Reading page ${pageNumber} with correlationid ${correlationId}`);
+    if (numberOfPages) {
+      logger.info(`Reading page ${pageNumber} of ${numberOfPages} of users with correlationid ${correlationId}`);
+    } else {
+      logger.info(`Reading page ${pageNumber} of users with correlationid ${correlationId}`);
+    }
 
-    const pageOfUsers = await getPageOfUsers(pageNumber, correlationId);
+    const pageOfUsers = await getPageOfUsers(pageNumber, 500, correlationId);
     const migratedUsers = getUsersFromPageThatMigrated(pageOfUsers);
     for (let i = 0; i < migratedUsers.length; i += 1) {
       const user = migratedUsers[i];
@@ -37,6 +42,7 @@ const queueMigratedUsersForSync = async (correlationId, queue) => {
     }
 
     pageNumber += 1;
+    numberOfPages = pageOfUsers.numberOfPages;
     hasMorePages = pageNumber <= pageOfUsers.numberOfPages;
   }
 };
@@ -62,14 +68,19 @@ const queueOrgTypesForSync = async (correlationId, queue) => {
 };
 
 const handleRestoreComplete = async (id, queue) => {
-  logger.info(`Received osarestorecomplete event (id: ${id})`);
+  try {
+    logger.info(`Received osarestorecomplete event (id: ${id})`);
 
-  const correlationId = `osarestorecomplete-${id}`;
+    const correlationId = `osarestorecomplete-${id}`;
 
-  await queueMigratedUsersForSync(correlationId, queue);
-  await queueOrgTypesForSync(correlationId, queue);
+    await queueMigratedUsersForSync(correlationId, queue);
+    await queueOrgTypesForSync(correlationId, queue);
 
-  logger.info(`Finished processing osarestorecomplete event (id: ${id})`);
+    logger.info(`Finished processing osarestorecomplete event (id: ${id})`);
+  } catch (e) {
+    logger.error(`Error processing osarestorecomplete event (id: ${id}) - ${e.message}`);
+    throw e;
+  }
 };
 
 module.exports = handleRestoreComplete;
