@@ -283,8 +283,8 @@ class ResultsWriter {
   constructor(roles, polices, exceptions) {
     const applicationsToIgnore = ['OSA', 'EvolveTSS'];
 
-    this.roles = roles.filter(x => applicationsToIgnore.find(y => y === x));
-    this.polices = polices.filter(x => applicationsToIgnore.find(y => y === x));
+    this.roles = roles.filter(x => !applicationsToIgnore.find(y => y === x));
+    this.polices = polices.filter(x => !applicationsToIgnore.find(y => y === x));
     this.exceptions = exceptions;
   }
 
@@ -297,7 +297,7 @@ class ResultsWriter {
       sql += 'INSERT INTO [Role]\n';
       sql += '(Id, Name, ApplicationId, Status, CreatedAt, UpdatedAt)\n';
       sql += 'VALUES\n';
-      sql += `(${role.id}, '${role.name}', '${role.applicationId}', ${role.status}, GETDATE(), GETDATE())\n`;
+      sql += `(${role.id}, '${role.name.replace(/'/g, '\'\'')}', '${role.applicationId}', ${role.status}, GETDATE(), GETDATE())\n`;
       sql += '\n';
     });
 
@@ -314,7 +314,7 @@ class ResultsWriter {
       sql += 'INSERT INTO [Policy]\n';
       sql += '(Id, Name, ApplicationId, Status, CreatedAt, UpdatedAt)\n';
       sql += 'VALUES\n';
-      sql += `('${policy.id}', '${policy.name}', '${policy.applicationId}', '${policy.status}', GETDATE(), GETDATE())\n`;
+      sql += `('${policy.id}', '${policy.name.replace(/'/g, '\'\'')}', '${policy.applicationId}', '${policy.status}', GETDATE(), GETDATE())\n`;
       sql += '\n';
 
       policy.conditions.forEach((condition) => {
