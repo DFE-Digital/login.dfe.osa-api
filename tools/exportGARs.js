@@ -268,6 +268,7 @@ class Context {
                 garId: policy.origin,
                 policyId: policy.id,
                 reason: `Removed user ${saUserId} from id condition as it they have not migrated`,
+                sqlHint: `INSERT INTO [PolicyCondition] (Id, PolicyId, Field, Operator, Value, CreatedAt, UpdatedAt) VALUES ('${uuid()}', '${policy.id}', 'id', '${condition.operator}', 'ENTER-USER-ID-HERE', GETDATE(), GETDATE())`,
               });
             }
           });
