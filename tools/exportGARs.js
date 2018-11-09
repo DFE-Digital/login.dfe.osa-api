@@ -283,8 +283,8 @@ class ResultsWriter {
   constructor(roles, polices, exceptions) {
     const applicationsToIgnore = ['OSA', 'EvolveTSS'];
 
-    this.roles = roles.filter(x => !applicationsToIgnore.find(y => y === x));
-    this.polices = polices.filter(x => !applicationsToIgnore.find(y => y === x));
+    this.roles = roles.filter(x => !applicationsToIgnore.find(y => y === x.applicationId));
+    this.polices = polices.filter(x => !applicationsToIgnore.find(y => y === x.applicationId));
     this.exceptions = exceptions;
   }
 
