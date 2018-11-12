@@ -63,7 +63,7 @@ const removeOldServices = async (osaUser, previous, userId, correlationId) => {
 const handleSyncOsaUser = async (id, osaUsername, userId) => {
   logger.info(`Received syncosauser for ${osaUsername} (userid ${userId}) (job id ${id})`);
   try {
-    const osaUser = await getOsaUser(osaUsername);
+    const osaUser = await getOsaUser(osaUsername, userId);
     const previous = await getPreviousDetailsForUser(osaUsername);
     const correlationId = `syncosauser-${id}`;
 
@@ -73,7 +73,7 @@ const handleSyncOsaUser = async (id, osaUsername, userId) => {
     await upsertNewAndUpdatedServices(osaUser, previous, userId, correlationId);
     await removeOldServices(osaUser, previous, userId, correlationId);
 
-    await setPreviousDetailsForUser(osaUsername, {
+    await setPreviousDetailsForUser(osaUsername, userId, {
       organisation: osaUser.organisation,
       role: osaUser.role,
       services: osaUser.services,
