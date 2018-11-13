@@ -153,7 +153,7 @@ describe('When syncing an OSA users details', () => {
     await handleSyncOsaUser(id, osaUsername, userId);
 
     expect(setPreviousDetailsForUser).toHaveBeenCalledTimes(1);
-    expect(setPreviousDetailsForUser).toHaveBeenCalledWith(osaUsername, {
+    expect(setPreviousDetailsForUser).toHaveBeenCalledWith(osaUsername, userId, {
       organisation: osaUser.organisation,
       role: osaUser.role,
       services: osaUser.services,
