@@ -137,6 +137,7 @@ class Context {
       this.roles.push({
         id: uuid(),
         origin: group.id,
+        code: group.code,
         name: group.name,
         applicationId: await this._maps.mapId('applications', group.applicationCode),
         status: group.status === 'active' ? 1 : 0,
@@ -283,8 +284,8 @@ class ResultsWriter {
   constructor(roles, polices, exceptions) {
     const applicationsToIgnore = ['OSA', 'EvolveTSS'];
 
-    this.roles = roles.filter(x => !applicationsToIgnore.find(y => y === x));
-    this.polices = polices.filter(x => !applicationsToIgnore.find(y => y === x));
+    this.roles = roles.filter(x => !applicationsToIgnore.find(y => y === x.applicationId));
+    this.polices = polices.filter(x => !applicationsToIgnore.find(y => y === x.applicationId));
     this.exceptions = exceptions;
   }
 
@@ -295,9 +296,9 @@ class ResultsWriter {
       sql += `--- ${role.name} - sa: ${role.origin} / dsi: ${role.id}\n`;
       sql += '-----------------------------------------------------------------------------------------------------------------\n';
       sql += 'INSERT INTO [Role]\n';
-      sql += '(Id, Name, ApplicationId, Status, CreatedAt, UpdatedAt)\n';
+      sql += '(Id, Name, ApplicationId, Status, CreatedAt, UpdatedAt, Code)\n';
       sql += 'VALUES\n';
-      sql += `(${role.id}, '${role.name.replace(/'/g, '\'\'')}', '${role.applicationId}', ${role.status}, GETDATE(), GETDATE())\n`;
+      sql += `('${role.id}', '${role.name.replace(/'/g, '\'\'')}', '${role.applicationId}', ${role.status}, GETDATE(), GETDATE(), '${role.code}')\n`;
       sql += '\n';
     });
 
