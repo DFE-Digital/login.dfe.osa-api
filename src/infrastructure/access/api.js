@@ -11,7 +11,7 @@ const rp = require('login.dfe.request-promise-retry').defaults({
 const jwtStrategy = require('login.dfe.jwt-strategies');
 
 
-const setUserAccessToService = async (userId, serviceId, organisationId, externalIdentifiers = [], correlationId) => {
+const setUserAccessToService = async (userId, serviceId, organisationId, externalIdentifiers = [], roles = [], correlationId) => {
   const token = await jwtStrategy(config.access.service).getBearerToken();
 
   try {
@@ -24,6 +24,7 @@ const setUserAccessToService = async (userId, serviceId, organisationId, externa
       },
       body: {
         identifiers: externalIdentifiers,
+        roles,
       },
       json: true,
     });
@@ -37,7 +38,6 @@ const setUserAccessToService = async (userId, serviceId, organisationId, externa
     throw e;
   }
 };
-
 
 const removeUserAccessToService = async (userId, serviceId, organisationId, correlationId) => {
   const token = await jwtStrategy(config.access.service).getBearerToken();
@@ -62,7 +62,29 @@ const removeUserAccessToService = async (userId, serviceId, organisationId, corr
   }
 };
 
+const getRolesOfService = async (serviceId, correlationId) => {
+  const token = await jwtStrategy(config.access.service).getBearerToken();
+
+  try {
+    return await rp({
+      method: 'GET',
+      uri: `${config.access.service.url}/services/${serviceId}/roles`,
+      headers: {
+        authorization: `bearer ${token}`,
+        'x-correlation-id': correlationId,
+      },
+      json: true,
+    });
+  } catch (e) {
+    if (e.statusCode === 404) {
+      return undefined;
+    }
+    throw e;
+  }
+};
+
 module.exports = {
   setUserAccessToService,
   removeUserAccessToService,
+  getRolesOfService,
 };

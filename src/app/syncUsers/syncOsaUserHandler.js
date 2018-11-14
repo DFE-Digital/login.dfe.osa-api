@@ -2,7 +2,7 @@ const logger = require('./../../infrastructure/logger');
 const { getUserByUsername: getOsaUser } = require('./../../infrastructure/oldSecureAccess');
 const { getPreviousDetailsForUser, setPreviousDetailsForUser } = require('./cache');
 const { setUserRoleAtOrganisation, getOrganisationByExternalId } = require('./../../infrastructure/organisations');
-const { setUserAccessToService, removeUserAccessToService } = require('./../../infrastructure/access');
+const { setUserAccessToService, removeUserAccessToService, getRolesOfService } = require('./../../infrastructure/access');
 
 const getOrganisationId = async (osaOrganisation) => {
   const organisation = await getOrganisationByExternalId('000', osaOrganisation.osaId);
@@ -39,8 +39,10 @@ const upsertNewAndUpdatedServices = async (osaUser, previous, userId, correlatio
       { key: 'saUserId', value: osaUser.osaId },
       { key: 'saUserName', value: osaUser.username },
     ];
+    const allRolesForService = await getRolesOfService(service.id, correlationId);
+    const roles = service.roles ? service.roles.map(code => allRolesForService.find(role => role.code.toLowerCase() === code.toLowerCase())).map(x => x.id) : [];
 
-    await setUserAccessToService(userId, service.id, osaUser.organisation.id, externalIdentifiers, correlationId);
+    await setUserAccessToService(userId, service.id, osaUser.organisation.id, externalIdentifiers, roles, correlationId);
 
     logger.info(`added service ${service.name} (${service.id}) to ${osaUser.username} / ${userId}`);
   }

@@ -9,7 +9,7 @@ jest.mock('./../../../src/infrastructure/access');
 const { getUserByUsername: getOsaUser } = require('./../../../src/infrastructure/oldSecureAccess');
 const { getPreviousDetailsForUser, setPreviousDetailsForUser } = require('./../../../src/app/syncUsers/cache');
 const { setUserRoleAtOrganisation, getOrganisationByExternalId } = require('./../../../src/infrastructure/organisations');
-const { setUserAccessToService, removeUserAccessToService } = require('./../../../src/infrastructure/access');
+const { setUserAccessToService, removeUserAccessToService, getRolesOfService } = require('./../../../src/infrastructure/access');
 const handleSyncOsaUser = require('./../../../src/app/syncUsers/syncOsaUserHandler');
 
 const id = 999;
@@ -80,6 +80,9 @@ describe('When syncing an OSA users details', () => {
 
     setUserAccessToService.mockReset();
     removeUserAccessToService.mockReset();
+    getRolesOfService.mockReset().mockReturnValue([
+      { id: 'role1', code: 'role_1' },
+    ]);
   });
 
   it('then it should not do anything if the user has not changed', async () => {
@@ -117,8 +120,9 @@ describe('When syncing an OSA users details', () => {
       { key: 'saUserId', value: osaUser.osaId },
       { key: 'saUserName', value: osaUser.username },
     ];
+    const expectedRoles = ['role1'];
     expect(setUserAccessToService).toHaveBeenCalledTimes(1);
-    expect(setUserAccessToService).toHaveBeenCalledWith(userId, osaUser.services[0].id, orgId, expectedIdentifiers, `syncosauser-${id}`);
+    expect(setUserAccessToService).toHaveBeenCalledWith(userId, osaUser.services[0].id, orgId, expectedIdentifiers, expectedRoles, `syncosauser-${id}`);
   });
 
   it('then it should update service when roles have changed', async () => {
@@ -134,8 +138,9 @@ describe('When syncing an OSA users details', () => {
       { key: 'saUserId', value: osaUser.osaId },
       { key: 'saUserName', value: osaUser.username },
     ];
+    const expectedRoles = ['role1'];
     expect(setUserAccessToService).toHaveBeenCalledTimes(1);
-    expect(setUserAccessToService).toHaveBeenCalledWith(userId, osaUser.services[0].id, orgId, expectedIdentifiers, `syncosauser-${id}`);
+    expect(setUserAccessToService).toHaveBeenCalledWith(userId, osaUser.services[0].id, orgId, expectedIdentifiers, expectedRoles, `syncosauser-${id}`);
   });
 
   it('then it should remove services no longer in SA', async () => {
