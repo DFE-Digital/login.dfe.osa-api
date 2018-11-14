@@ -63,8 +63,8 @@ const removeOldServices = async (osaUser, previous, userId, correlationId) => {
 const handleSyncOsaUser = async (id, osaUsername, userId) => {
   logger.info(`Received syncosauser for ${osaUsername} (userid ${userId}) (job id ${id})`);
   try {
-    const osaUser = await getOsaUser(osaUsername, userId);
-    const previous = await getPreviousDetailsForUser(osaUsername);
+    const osaUser = await getOsaUser(osaUsername);
+    const previous = await getPreviousDetailsForUser(osaUsername, userId);
     const correlationId = `syncosauser-${id}`;
 
     osaUser.organisation.id = await getOrganisationId(osaUser.organisation);
