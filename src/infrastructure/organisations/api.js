@@ -45,8 +45,8 @@ const getOrganisationByExternalId = async (type, externalId, correlationId) => {
   }
 };
 
-const setUserRoleAtOrganisation = async (userId, organisationId, roleId, correlationId) => {
-  await callApi('PUT', `/organisations/${organisationId}/users/${userId}`, { roleId }, correlationId);
+const setUserRoleAtOrganisation = async (userId, organisationId, roleId, numericIdentifier, textIdentifier, correlationId) => {
+  await callApi('PUT', `/organisations/${organisationId}/users/${userId}`, { roleId, numericIdentifier, textIdentifier }, correlationId);
 };
 
 const setUserAccessToService = async (userId, organisationId, serviceId, externalIdentifiers, correlationId) => {

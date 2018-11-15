@@ -16,7 +16,7 @@ const updateRole = async (osaUser, previous, userId, correlationId) => {
     return; // No update
   }
 
-  await setUserRoleAtOrganisation(userId, osaUser.organisation.id, osaUser.organisation.role.id, correlationId);
+  await setUserRoleAtOrganisation(userId, osaUser.organisation.id, osaUser.organisation.role.id, osaUser.osaId, osaUser.username, correlationId);
 
   logger.info(`updated role of ${osaUser.username} / ${userId} to ${osaUser.organisation.role.name} (${osaUser.organisation.role.id})`);
 };
