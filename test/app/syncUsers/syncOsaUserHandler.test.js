@@ -104,7 +104,7 @@ describe('When syncing an OSA users details', () => {
     await handleSyncOsaUser(id, osaUsername, userId);
 
     expect(setUserRoleAtOrganisation).toHaveBeenCalledTimes(1);
-    expect(setUserRoleAtOrganisation).toHaveBeenCalledWith(userId, orgId, osaUser.organisation.role.id, `syncosauser-${id}`);
+    expect(setUserRoleAtOrganisation).toHaveBeenCalledWith(userId, orgId, osaUser.organisation.role.id, osaUser.osaId, osaUser.username, `syncosauser-${id}`);
   });
 
   it('then it should add new services', async () => {

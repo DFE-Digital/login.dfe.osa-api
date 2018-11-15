@@ -2,7 +2,7 @@ const getOrganisationByExternalId = async (type, externalId, correlationId) => {
   return Promise.resolve(null);
 };
 
-const setUserRoleAtOrganisation = async (userId, organisationId, roleId, correlationId) => {
+const setUserRoleAtOrganisation = async (userId, organisationId, roleId, numericIdentifier, textIdentifier, correlationId) => {
   return Promise.resolve();
 };
 
