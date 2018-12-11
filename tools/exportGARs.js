@@ -296,9 +296,9 @@ class ResultsWriter {
       sql += `--- ${role.name} - sa: ${role.origin} / dsi: ${role.id}\n`;
       sql += '-----------------------------------------------------------------------------------------------------------------\n';
       sql += 'INSERT INTO [Role]\n';
-      sql += '(Id, Name, ApplicationId, Status, CreatedAt, UpdatedAt, Code)\n';
+      sql += '(Id, Name, ApplicationId, Status, CreatedAt, UpdatedAt, Code, NumericId)\n';
       sql += 'VALUES\n';
-      sql += `('${role.id}', '${role.name.replace(/'/g, '\'\'')}', '${role.applicationId}', ${role.status}, GETDATE(), GETDATE(), '${role.code}')\n`;
+      sql += `('${role.id}', '${role.name.replace(/'/g, '\'\'')}', '${role.applicationId}', ${role.status}, GETDATE(), GETDATE(), '${role.code}', ${role.origin})\n`;
       sql += '\n';
     });
 
