@@ -1,5 +1,5 @@
-const { db, users } = require('./../src/infrastructure/oldSecureAccess/schemas/legacySecureAccess.schema');
-const { QueryTypes } = require('sequelize');
+const {db, users} = require('./../src/infrastructure/oldSecureAccess/schemas/legacySecureAccess.schema');
+const {QueryTypes} = require('sequelize');
 const uniq = require('lodash/uniq');
 const uniqBy = require('lodash/uniqBy');
 const flatten = require('lodash/flatten');
@@ -48,43 +48,43 @@ const forEach = async (source, iteratee) => {
 class Maps {
   constructor() {
     this.applications = [
-      { source: 'SAFE', destination: 'OSA' },
-      { source: 'EvolveTSS', destination: 'EvolveTSS' },
-      { source: 'COLLECT', destination: '4FD40032-61A6-4BEB-A6C4-6B39A3AF81C1' },
-      { source: 'S2S', destination: '09ABFB35-3D09-41A7-9E4E-B8512B9B7D5E' },
-      { source: 'KTS', destination: '57E972F8-0EDA-4F0F-AAF9-50B55662C528' },
-      { source: 'EvolveEmpAccessSchool', destination: 'AA4BD63E-61B8-421F-90DF-8EF2CD15AA38' },
-      { source: 'EvolveTrainingProvider', destination: '0D15C5BD-CA2F-4211-B789-853BB34CE884' },
-      { source: 'EvolveEmpAccessAgent', destination: 'DDFA2FA3-9824-4678-A2E0-F34D6D71948E' },
-      { source: 'EvolveAppropriateBody', destination: '8FBA5FDE-832B-499B-957E-8BCD97D11B2D' },
-      { source: 'Post16CoursePortal', destination: '09C66A38-C8C2-448D-87C5-A4895FB7F8DE' },
-      { source: 'EduBase', destination: '2354CB2E-F559-4BF4-9981-4F6C6890AA5E' },
-      { source: 'RAISEonline', destination: 'DF2AE7F3-917A-4489-8A62-8B9B536A71CC' },
-      { source: 'AnalyseSchoolPerformance', destination: 'DF2AE7F3-917A-4489-8A62-8B9B536A71CC' },
-      { source: 'EvolveEmpAccessSchoolProd', destination: 'AA4BD63E-61B8-421F-90DF-8EF2CD15AA38' },
-      { source: 'EvolveEmpAccessAgentProd', destination: 'DDFA2FA3-9824-4678-A2E0-F34D6D71948E' },
-      { source: 'EvolveAppropriateBodyProd', destination: '8FBA5FDE-832B-499B-957E-8BCD97D11B2D' },
-      { source: 'CustomerExchange', destination: '913BA321-9547-46B2-93C3-A7A7FFC2E3E2' },
-      { source: 'CustomerExchangeTest', destination: '913BA321-9547-46B2-93C3-A7A7FFC2E3E2' },
+      {source: 'SAFE', destination: 'OSA'},
+      {source: 'EvolveTSS', destination: 'EvolveTSS'},
+      {source: 'COLLECT', destination: '4FD40032-61A6-4BEB-A6C4-6B39A3AF81C1'},
+      {source: 'S2S', destination: '09ABFB35-3D09-41A7-9E4E-B8512B9B7D5E'},
+      {source: 'KTS', destination: '57E972F8-0EDA-4F0F-AAF9-50B55662C528'},
+      {source: 'EvolveEmpAccessSchool', destination: 'AA4BD63E-61B8-421F-90DF-8EF2CD15AA38'},
+      {source: 'EvolveTrainingProvider', destination: '0D15C5BD-CA2F-4211-B789-853BB34CE884'},
+      {source: 'EvolveEmpAccessAgent', destination: 'DDFA2FA3-9824-4678-A2E0-F34D6D71948E'},
+      {source: 'EvolveAppropriateBody', destination: '8FBA5FDE-832B-499B-957E-8BCD97D11B2D'},
+      {source: 'Post16CoursePortal', destination: '09C66A38-C8C2-448D-87C5-A4895FB7F8DE'},
+      {source: 'EduBase', destination: '2354CB2E-F559-4BF4-9981-4F6C6890AA5E'},
+      {source: 'RAISEonline', destination: 'DF2AE7F3-917A-4489-8A62-8B9B536A71CC'},
+      {source: 'AnalyseSchoolPerformance', destination: 'DF2AE7F3-917A-4489-8A62-8B9B536A71CC'},
+      {source: 'EvolveEmpAccessSchoolProd', destination: 'AA4BD63E-61B8-421F-90DF-8EF2CD15AA38'},
+      {source: 'EvolveEmpAccessAgentProd', destination: 'DDFA2FA3-9824-4678-A2E0-F34D6D71948E'},
+      {source: 'EvolveAppropriateBodyProd', destination: '8FBA5FDE-832B-499B-957E-8BCD97D11B2D'},
+      {source: 'CustomerExchange', destination: '913BA321-9547-46B2-93C3-A7A7FFC2E3E2'},
+      {source: 'CustomerExchangeTest', destination: '913BA321-9547-46B2-93C3-A7A7FFC2E3E2'},
     ];
     this.fields = [
-      { source: 'organisation.status', destination: 'organisation.status.id' },
-      { source: 'organisation', destination: 'organisation.id' },
-      { source: 'organisation.extension.value(type)', destination: 'organisation.type.id' },
-      { source: 'organisation.extension.value(phase)', destination: 'organisation.phaseOfEducation.id' },
-      { source: 'groups', destination: 'role.id' },
-      { source: 'organisation.region', destination: 'organisation.region.id' },
-      { source: 'this', destination: 'id' },
-      { source: 'organisation.type', destination: 'organisation.category.id' },
-      { source: 'organisation.localAuthority', destination: 'organisation.localAuthority.id' },
+      {source: 'organisation.status', destination: 'organisation.status.id'},
+      {source: 'organisation', destination: 'organisation.id'},
+      {source: 'organisation.extension.value(type)', destination: 'organisation.type.id'},
+      {source: 'organisation.extension.value(phase)', destination: 'organisation.phaseOfEducation.id'},
+      {source: 'groups', destination: 'role.id'},
+      {source: 'organisation.region', destination: 'organisation.region.id'},
+      {source: 'this', destination: 'id'},
+      {source: 'organisation.type', destination: 'organisation.category.id'},
+      {source: 'organisation.localAuthority', destination: 'organisation.localAuthority.id'},
     ];
     this.operators = [
-      { source: 'dic.is', destination: 'is' },
-      { source: 'entity.is', destination: 'is' },
-      { source: 'entity.list.has', destination: 'is' },
-      { source: 'dic.is_not', destination: 'is_not' },
-      { source: 'entity.list.has.none', destination: 'is_not' },
-      { source: 'entity.is_not', destination: 'is_not' },
+      {source: 'dic.is', destination: 'is'},
+      {source: 'entity.is', destination: 'is'},
+      {source: 'entity.list.has', destination: 'is'},
+      {source: 'dic.is_not', destination: 'is_not'},
+      {source: 'entity.list.has.none', destination: 'is_not'},
+      {source: 'entity.is_not', destination: 'is_not'},
     ];
 
     this.jitLoaders = {};
@@ -108,7 +108,7 @@ class Maps {
       if (loader) {
         const destination = await loader(saId);
         if (destination) {
-          value = { source: saId, destination };
+          value = {source: saId, destination};
           map.push(destination);
         }
       }
@@ -141,7 +141,16 @@ class Context {
         name: group.name,
         applicationId: await this._maps.mapId('applications', group.applicationCode),
         status: group.status === 'active' ? 1 : 0,
+        parentOrigin: group.parentId,
       });
+    }
+
+    for (let i = 0; i < this.roles.length; i++) {
+      const role = this.roles[i];
+      role.parentId = null;
+      if (role.parentOrigin) {
+        role.parentId = this.roles.find((r) => r.origin = role.parentOrigin ).id;
+      }
     }
   }
 
@@ -296,14 +305,14 @@ class ResultsWriter {
       sql += `--- ${role.name} - sa: ${role.origin} / dsi: ${role.id}\n`;
       sql += '-----------------------------------------------------------------------------------------------------------------\n';
       sql += 'INSERT INTO [Role]\n';
-      sql += '(Id, Name, ApplicationId, Status, CreatedAt, UpdatedAt, Code, NumericId)\n';
+      sql += '(Id, Name, ApplicationId, Status, CreatedAt, UpdatedAt, Code, NumericId, ParentId)\n';
       sql += 'VALUES\n';
-      sql += `('${role.id}', '${role.name.replace(/'/g, '\'\'')}', '${role.applicationId}', ${role.status}, GETDATE(), GETDATE(), '${role.code}', ${role.origin})\n`;
+      sql += `('${role.id}', '${role.name.replace(/'/g, '\'\'')}', '${role.applicationId}', ${role.status}, GETDATE(), GETDATE(), '${role.code}', ${role.origin}, ${role.parentId ? `'${role.parentId}'` : null })\n`;
       sql += '\n';
     });
 
     fs.writeFileSync(destination, sql, 'UTF8');
-    console.info(`Saved roles to ${destination}`);
+      console.info(`Saved roles to ${destination}`);
   }
 
   savePolicies(destination) {
@@ -358,7 +367,7 @@ const getGarsWithCriteria = async () => {
     'JOIN rexf_entity_extension extension2 on sc.parameters = extension2.id\n' +
     'JOIN rexf_attribute_value v on extension2.id = v.entity\n' +
     'JOIN rexf_atomic_value value2 on v.id = value2.attribute_value\n' +
-    'ORDER BY gar.id, sf.id, sc.id, a.id', { type: QueryTypes.SELECT });
+    'ORDER BY gar.id, sf.id, sc.id, a.id', {type: QueryTypes.SELECT});
   const rules = [];
   results.forEach((row) => {
     let rule = rules.find(r => r.id === row.id);
@@ -386,12 +395,13 @@ const getGarsWithCriteria = async () => {
   return rules;
 };
 const getGarGroupMappings = async () => {
-  const results = await db.query('SELECT gar.id gar_id, ug.id group_id, ug.code group_code, ug.name group_name, ug.description group_description, ug.status group_status, a.code application_code\n' +
+  const results = await db.query('SELECT gar.id gar_id, ug.id group_id, ug.code group_code, ug.name group_name, ug.description group_description, ug.status group_status, a.code application_code, ug_p.id parent_id\n' +
     'FROM group_access_rule_to_user_group garug\n' +
     'JOIN group_access_rule gar ON garug.group_access_rule = gar.id\n' +
     'JOIN user_group ug on garug.user_group = ug.id\n' +
+    'LEFT JOIN user_group ug_p on ug.parent = ug_p.id\n' +
     'JOIN customer_application a on ug.application = a.id\n' +
-    'ORDER BY garug.group_access_rule, ug.id', { type: QueryTypes.SELECT });
+    'ORDER BY garug.group_access_rule, ug.id', {type: QueryTypes.SELECT});
   const rules = [];
   results.forEach((row) => {
     let rule = rules.find(r => r.id === row.gar_id);
@@ -410,6 +420,7 @@ const getGarGroupMappings = async () => {
       description: row.group_description,
       status: row.group_status,
       applicationCode: row.application_code,
+      parentId: row.parent_id,
     });
   });
   return rules;
@@ -422,7 +433,7 @@ const mergeGars = (garsAndCriteria, garGroups) => {
       return;
     }
 
-    merged.push(Object.assign({}, rule, { groups: groupMappings.groups }));
+    merged.push(Object.assign({}, rule, {groups: groupMappings.groups}));
   });
   return merged;
 };
