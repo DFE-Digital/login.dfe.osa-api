@@ -66,6 +66,26 @@ class Maps {
       {source: 'EvolveAppropriateBodyProd', destination: '8FBA5FDE-832B-499B-957E-8BCD97D11B2D'},
       {source: 'CustomerExchange', destination: '913BA321-9547-46B2-93C3-A7A7FFC2E3E2'},
       {source: 'CustomerExchangeTest', destination: '913BA321-9547-46B2-93C3-A7A7FFC2E3E2'},
+      { source: 'SAFE', destination: 'OSA' },
+      { source: 'EvolveTSS', destination: 'EvolveTSS' },
+      { source: 'EvolveAppropriateBody_NOSP', destination: 'EvolveAppropriateBody_NOSP' },
+
+      { source: 'COLLECT', destination: '4FD40032-61A6-4BEB-A6C4-6B39A3AF81C1' },
+      { source: 'S2S', destination: '09ABFB35-3D09-41A7-9E4E-B8512B9B7D5E' },
+      { source: 'KTS', destination: '57E972F8-0EDA-4F0F-AAF9-50B55662C528' },
+      { source: 'EvolveEmpAccessSchool', destination: 'AA4BD63E-61B8-421F-90DF-8EF2CD15AA38' },
+      { source: 'EvolveTrainingProvider', destination: '0D15C5BD-CA2F-4211-B789-853BB34CE884' },
+      { source: 'EvolveEmpAccessAgent', destination: 'DDFA2FA3-9824-4678-A2E0-F34D6D71948E' },
+      { source: 'EvolveAppropriateBody', destination: '8FBA5FDE-832B-499B-957E-8BCD97D11B2D' },
+      { source: 'Post16CoursePortal', destination: '09C66A38-C8C2-448D-87C5-A4895FB7F8DE' },
+      { source: 'EduBase', destination: '2354CB2E-F559-4BF4-9981-4F6C6890AA5E' },
+      { source: 'RAISEonline', destination: 'DF2AE7F3-917A-4489-8A62-8B9B536A71CC' },
+      { source: 'AnalyseSchoolPerformance', destination: 'DF2AE7F3-917A-4489-8A62-8B9B536A71CC' },
+      { source: 'EvolveEmpAccessSchoolProd', destination: 'AA4BD63E-61B8-421F-90DF-8EF2CD15AA38' },
+      { source: 'EvolveEmpAccessAgentProd', destination: 'DDFA2FA3-9824-4678-A2E0-F34D6D71948E' },
+      { source: 'EvolveAppropriateBodyProd', destination: '8FBA5FDE-832B-499B-957E-8BCD97D11B2D' },
+      { source: 'CustomerExchange', destination: '913BA321-9547-46B2-93C3-A7A7FFC2E3E2' },
+      { source: 'CustomerExchangeTest', destination: '913BA321-9547-46B2-93C3-A7A7FFC2E3E2' },
     ];
     this.fields = [
       {source: 'organisation.status', destination: 'organisation.status.id'},
@@ -121,28 +141,26 @@ class Maps {
 }
 
 class Context {
-  constructor(gars, maps) {
+  constructor(gars, roles, maps) {
     this.gars = gars;
-    this.roles = [];
+    this.roles = roles;
     this.policies = [];
     this.exceptions = [];
 
     this._maps = maps;
   }
 
-  async extractRolesFromGars() {
-    const groups = uniqBy(flatten(this.gars.map(x => x.groups)), 'id');
-    for (let i = 0; i < groups.length; i += 1) {
-      const group = groups[i];
-      this.roles.push({
-        id: uuid(),
-        origin: group.id,
-        code: group.code,
-        name: group.name,
-        applicationId: await this._maps.mapId('applications', group.applicationCode),
-        status: group.status === 'active' ? 1 : 0,
-        parentOrigin: group.parentId,
-      });
+  async mapRolesToApplications() {
+    for (let i = 0; i < this.roles.length; i += 1) {
+      const role = this.roles[i];
+      try {
+        role.applicationId = await this._maps.mapId('applications', role.applicationCode);
+      } catch (e) {
+        this.exceptions.push({
+          groupId: role.origin,
+          reason: `Did not export role ${role.name} (id: ${role.origin}) as it has not application mapping`,
+        });
+      }
     }
 
     for (let i = 0; i < this.roles.length; i++) {
@@ -291,9 +309,9 @@ class Context {
 
 class ResultsWriter {
   constructor(roles, polices, exceptions) {
-    const applicationsToIgnore = ['OSA', 'EvolveTSS'];
+    const applicationsToIgnore = ['OSA', 'EvolveTSS', 'EvolveAppropriateBody_NOSP'];
 
-    this.roles = roles.filter(x => !applicationsToIgnore.find(y => y === x.applicationId));
+    this.roles = roles.filter(x => x.applicationId && !applicationsToIgnore.find(y => y === x.applicationId));
     this.polices = polices.filter(x => !applicationsToIgnore.find(y => y === x.applicationId));
     this.exceptions = exceptions;
   }
@@ -444,6 +462,18 @@ const getGars = async () => {
 
   return rules;
 };
+const getRoles = async () => {
+  const results = await db.query('SELECT ug.id, ug.code, ug.name, ug.status, ca.code application_code FROM user_group ug JOIN customer_application ca on ug.application = ca.id', { type: QueryTypes.SELECT });
+  const roles = results.map(row => ({
+    id: uuid(),
+    origin: row.id,
+    code: row.code,
+    name: row.name,
+    applicationCode: row.application_code,
+    status: row.status === 'active' ? 1 : 0,
+  }));
+  return roles;
+};
 
 const loadOrganisation = async (saId) => {
   if (settings.organisations.stub) {
@@ -505,13 +535,14 @@ const loadUser = async (saId) => {
 
 const run = async () => {
   const gars = await getGars();
+  const roles = await getRoles();
   const maps = new Maps();
 
   maps.addJitMapLoader('organisations', loadOrganisation);
   maps.addJitMapLoader('users', loadUser);
 
-  const context = new Context(gars, maps);
-  await context.extractRolesFromGars();
+  const context = new Context(gars, roles, maps);
+  await context.mapRolesToApplications();
   await context.mapGarsToPolicies();
   await context.removePoliciesThatHaveRoleConditionsCrossApplication();
   await context.mapPolicyConditionIdentifiers();
