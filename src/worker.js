@@ -7,11 +7,15 @@ const healthCheck = require('login.dfe.healthcheck');
 const downloadAndRestoreOsaBackup = require('./app/osaRestore');
 const { startMonitoring, stopMonitoring } = require('./app/syncUsers');
 
-const osaRestoreSchedule = schedule.scheduleJob(config.schedules.osaRestore, async () => {
-  await downloadAndRestoreOsaBackup();
-  logger.info(`next invocation of OSA restore schedule will be ${osaRestoreSchedule.nextInvocation()}`);
-});
-logger.info(`first invocation of OSA restore schedule will be ${osaRestoreSchedule.nextInvocation()}`);
+if(config.schedules.osaRestore.toLowerCase() !== 'disabled') {
+  const osaRestoreSchedule = schedule.scheduleJob(config.schedules.osaRestore, async () => {
+    await downloadAndRestoreOsaBackup();
+    logger.info(`next invocation of OSA restore schedule will be ${osaRestoreSchedule.nextInvocation()}`);
+  });
+  logger.info(`first invocation of OSA restore schedule will be ${osaRestoreSchedule.nextInvocation()}`);
+} else {
+  logger.info('OSA restore schedule is disabled');
+}
 
 startMonitoring();
 process.once('SIGTERM', () => {
