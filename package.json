@@ -2,7 +2,6 @@
   "name": "login.dfe.osa-api",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "dev": "settings='./config/login.dfe.osa-api.dev.json' node src/web.js",
     "test": "./node_modules/.bin/jest"
